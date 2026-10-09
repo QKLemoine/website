@@ -2,8 +2,8 @@
 
 import { useEffect, useRef } from "react"
 
-import { onDesktopEvent } from "./events"
-import { defaultWallpaperConfig, type WallpaperConfig } from "./config"
+import type { BackgroundConfig } from "./config"
+import { onBackgroundEvent } from "./events"
 import {
   addPulse,
   createField,
@@ -25,16 +25,10 @@ const SLOW_FRAME_MS = 22
 /** Gaps this long are pauses, not slow rendering, and are ignored. */
 const STALL_MS = 250
 const QUALITY_WINDOW_FRAMES = 120
-const MIN_PARTICLES = 150
-const ACTIVITY_PULSE_SECONDS = 0.8
+const MIN_PARTICLES = 60
+const ACTIVITY_PULSE_SECONDS = 0.9
 /** Points at or above this size use the thicker stroke. */
 const LARGE_POINT = 1.35
-
-// Static film grain. Very dark gradients only have a few 8-bit shades to work
-// with and show visible rings; a little noise dithers them away. It is a
-// one-off SVG texture, so it costs nothing per frame.
-const GRAIN =
-  "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E\")"
 
 function rgba(hex: string, alpha: number): string {
   const value = Number.parseInt(hex.slice(1), 16)
@@ -56,14 +50,13 @@ function isLowPower(): boolean {
 function drawGlow(
   ctx: CanvasRenderingContext2D,
   field: Field,
-  config: WallpaperConfig
+  config: BackgroundConfig
 ) {
   const { width, height } = ctx.canvas
-  ctx.globalCompositeOperation = "source-over"
-  ctx.fillStyle = config.background
-  ctx.fillRect(0, 0, width, height)
-  ctx.globalCompositeOperation = "lighter"
-  const radius = (Math.min(field.width, field.height) * 0.45) / GLOW_SCALE
+  // Both layers stay transparent so the page's own background shows through
+  // and the component works on any theme.
+  ctx.clearRect(0, 0, width, height)
+  const radius = (Math.min(field.width, field.height) * 0.5) / GLOW_SCALE
   for (let k = 0; k < field.clusterCount; k++) {
     const cx = field.centerX[k] / GLOW_SCALE
     const cy = field.centerY[k] / GLOW_SCALE
@@ -79,7 +72,7 @@ function drawGlow(
 function drawPoints(
   ctx: CanvasRenderingContext2D,
   field: Field,
-  config: WallpaperConfig,
+  config: BackgroundConfig,
   dpr: number,
   activity: number
 ) {
@@ -90,15 +83,15 @@ function drawPoints(
   ctx.globalCompositeOperation = "source-over"
   ctx.clearRect(0, 0, field.width, field.height)
 
-  ctx.globalCompositeOperation = "lighter"
+  ctx.globalCompositeOperation = config.blend
   ctx.lineCap = "round"
-  const alpha = 0.7 + activity * 0.3
+  const alpha = config.pointOpacity * (1 + activity * 0.35)
   const trail = config.trailLength
-  // One path per cluster and size class: a dozen strokes per frame in total.
+  // One path per cluster and size class: about ten strokes per frame in total.
   for (let k = 0; k < field.clusterCount; k++) {
     ctx.strokeStyle = rgba(config.palette[k % config.palette.length], alpha)
     for (let large = 0; large < 2; large++) {
-      ctx.lineWidth = large ? 3.1 : 2
+      ctx.lineWidth = large ? 3 : 2
       ctx.beginPath()
       for (let i = 0; i < field.count; i++) {
         if (field.cluster[i] !== k) continue
@@ -113,9 +106,10 @@ function drawPoints(
     }
   }
 
+  ctx.globalCompositeOperation = "source-over"
   for (const pulse of field.pulses) {
     const life = 1 - pulse.age / PULSE_LIFE
-    ctx.strokeStyle = `rgba(255, 255, 255, ${0.1 * life * pulse.strength})`
+    ctx.strokeStyle = `rgba(${config.rippleColor}, ${0.14 * life * pulse.strength})`
     ctx.lineWidth = 1.5
     ctx.beginPath()
     ctx.arc(pulse.x, pulse.y, pulse.age * PULSE_SPEED, 0, Math.PI * 2)
@@ -124,17 +118,32 @@ function drawPoints(
 }
 
 /**
- * Animated background: points drifting between soft clusters, reacting to the
- * cursor and to desktop events. Self-contained; pass a config to restyle it.
+ * Decorative animated background: points drifting between soft clusters, like
+ * a projected embedding space. It reacts to the cursor, clicks and taps, page
+ * scroll, and events sent through ./events. Fills its positioned parent.
  */
-export function Wallpaper({
-  config = defaultWallpaperConfig,
+export default function ReactiveBackground({
+  config,
+  className,
 }: {
-  config?: WallpaperConfig
+  config: BackgroundConfig
+  className?: string
 }) {
   const containerRef = useRef<HTMLDivElement>(null)
   const glowRef = useRef<HTMLCanvasElement>(null)
   const pointsRef = useRef<HTMLCanvasElement>(null)
+  // Colours and strengths are read from here every frame, so a theme switch
+  // restyles the existing field instead of rebuilding it.
+  const configRef = useRef(config)
+  const redrawRef = useRef<(() => void) | null>(null)
+
+  useEffect(() => {
+    configRef.current = config
+    redrawRef.current?.()
+  }, [config])
+
+  const { particleCount, areaPerParticle, clusterCount, maxDevicePixelRatio } =
+    config
 
   useEffect(() => {
     const container = containerRef.current
@@ -148,17 +157,23 @@ export function Wallpaper({
     const lowPower = isLowPower()
     let dpr = lowPower
       ? 1
-      : Math.min(window.devicePixelRatio || 1, config.maxDevicePixelRatio)
-    const options = {
-      particleCount: Math.round(config.particleCount * (lowPower ? 0.5 : 1)),
-      clusterCount: config.clusterCount,
-      interactionStrength: config.interactionStrength,
-      interactionRadius: config.interactionRadius,
-    }
+      : Math.min(window.devicePixelRatio || 1, maxDevicePixelRatio)
+    const width = container.clientWidth || 1
+    const height = container.clientHeight || 1
+    const byArea = Math.round((width * height) / areaPerParticle)
+    const count = Math.max(
+      MIN_PARTICLES,
+      Math.round(Math.min(particleCount, byArea) * (lowPower ? 0.5 : 1))
+    )
     const field = createField(
-      options,
-      container.clientWidth || 1,
-      container.clientHeight || 1
+      {
+        particleCount: count,
+        clusterCount,
+        interactionStrength: 0,
+        interactionRadius: 0,
+      },
+      width,
+      height
     )
 
     const pointer: Pointer = { x: 0, y: 0, active: false }
@@ -168,29 +183,35 @@ export function Wallpaper({
     let frameCount = 0
     let slowFrames = 0
     let slowWindows = 0
+    let onScreen = true
     let activity = 0
     let activityTarget = 0
     let activityOrigin = { x: 0, y: 0 }
     let sinceActivityPulse = 0
 
     const sizeCanvases = () => {
-      const width = container.clientWidth || 1
-      const height = container.clientHeight || 1
-      resizeField(field, width, height)
-      pointsCanvas.width = Math.round(width * dpr)
-      pointsCanvas.height = Math.round(height * dpr)
-      glowCanvas.width = Math.ceil(width / GLOW_SCALE)
-      glowCanvas.height = Math.ceil(height / GLOW_SCALE)
-      drawGlow(glow, field, config)
+      const w = container.clientWidth || 1
+      const h = container.clientHeight || 1
+      resizeField(field, w, h)
+      pointsCanvas.width = Math.round(w * dpr)
+      pointsCanvas.height = Math.round(h * dpr)
+      glowCanvas.width = Math.ceil(w / GLOW_SCALE)
+      glowCanvas.height = Math.ceil(h / GLOW_SCALE)
+      drawGlow(glow, field, configRef.current)
     }
 
-    /** One finished-looking still image: used for reduced motion and before the loop starts. */
+    /** One finished-looking still image: used for reduced motion and whenever the loop is stopped. */
     const drawStill = () => {
-      drawGlow(glow, field, config)
-      drawPoints(points, field, config, dpr, 0)
+      drawGlow(glow, field, configRef.current)
+      drawPoints(points, field, configRef.current, dpr, 0)
     }
+
+    const scrollDrift = () =>
+      (window.scrollY / Math.max(window.innerHeight, 1)) *
+      configRef.current.scrollShift
 
     const frame = (now: number) => {
+      const current = configRef.current
       // The first frame has no previous timestamp to measure from. (Comparing
       // against performance.now() instead is wrong: rAF timestamps can be
       // slightly earlier than it, which would produce a negative step.)
@@ -203,19 +224,28 @@ export function Wallpaper({
         sinceActivityPulse += dt
         if (sinceActivityPulse >= ACTIVITY_PULSE_SECONDS) {
           sinceActivityPulse = 0
-          addPulse(field, activityOrigin.x, activityOrigin.y, 0.35)
+          addPulse(field, activityOrigin.x, activityOrigin.y, 0.3)
         }
       }
 
-      stepField(field, dt, pointer, activity, options)
-      if (frameCount % GLOW_EVERY === 0) drawGlow(glow, field, config)
-      drawPoints(points, field, config, dpr, activity)
+      // Scrolling moves the clusters along their paths. Easing toward the
+      // target turns a flick of the wheel into a slow glide of the whole field.
+      field.drift += (scrollDrift() - field.drift) * Math.min(1, dt * 2.5)
+
+      stepField(field, dt, pointer, activity, {
+        particleCount: field.capacity,
+        clusterCount: field.clusterCount,
+        interactionStrength: current.interactionStrength,
+        interactionRadius: current.interactionRadius,
+      })
+      if (frameCount % GLOW_EVERY === 0) drawGlow(glow, field, current)
+      drawPoints(points, field, current, dpr, activity)
 
       // Adaptive quality: if this device can't hold the frame rate, shed
       // points and resolution rather than stutter. A step down needs most
       // frames to be slow for two windows in a row, so a one-off stall (tab
-      // switch, GC, a screenshot) doesn't cost quality; and it never steps
-      // back up, so quality can't oscillate.
+      // switch, GC) doesn't cost quality; and it never steps back up, so
+      // quality can't oscillate.
       frameCount++
       if (elapsed > SLOW_FRAME_MS && elapsed < STALL_MS) slowFrames++
       if (frameCount % QUALITY_WINDOW_FRAMES === 0) {
@@ -236,7 +266,8 @@ export function Wallpaper({
     }
 
     const start = () => {
-      if (frameId !== 0 || document.hidden || reducedMotion.matches) return
+      if (frameId !== 0 || document.hidden || !onScreen || reducedMotion.matches)
+        return
       lastTime = 0
       frameCount = 0
       frameId = requestAnimationFrame(frame)
@@ -258,12 +289,18 @@ export function Wallpaper({
       else start()
     }
 
-    const onPointerMove = (event: PointerEvent) => {
-      // Touch has no hover; reacting to taps would just make the field twitch.
-      if (event.pointerType === "touch") return
+    const toLocal = (clientX: number, clientY: number) => {
       const rect = container.getBoundingClientRect()
-      pointer.x = event.clientX - rect.left
-      pointer.y = event.clientY - rect.top
+      return { x: clientX - rect.left, y: clientY - rect.top }
+    }
+
+    const onPointerMove = (event: PointerEvent) => {
+      // Touch has no hover; a finger dragging to scroll shouldn't shove the
+      // field around. Touch gets ripples and the scroll shift instead.
+      if (event.pointerType === "touch") return
+      const local = toLocal(event.clientX, event.clientY)
+      pointer.x = local.x
+      pointer.y = local.y
       pointer.active = true
     }
 
@@ -271,16 +308,21 @@ export function Wallpaper({
       pointer.active = false
     }
 
-    const offDesktopEvent = onDesktopEvent((event) => {
+    // Clicks and taps anywhere on the page send out a soft ripple.
+    const onPointerDown = (event: PointerEvent) => {
       if (reducedMotion.matches) return
-      const rect = container.getBoundingClientRect()
-      const x = event.x - rect.left
-      const y = event.y - rect.top
+      const local = toLocal(event.clientX, event.clientY)
+      addPulse(field, local.x, local.y, configRef.current.clickStrength)
+    }
+
+    const offBackgroundEvent = onBackgroundEvent((event) => {
+      if (reducedMotion.matches) return
+      const local = toLocal(event.x, event.y)
       if (event.type === "pulse") {
-        addPulse(field, x, y, event.strength ?? 1)
+        addPulse(field, local.x, local.y, event.strength ?? 1)
       } else {
         activityTarget = event.active ? 1 : 0
-        activityOrigin = { x, y }
+        activityOrigin = local
         sinceActivityPulse = ACTIVITY_PULSE_SECONDS
       }
     })
@@ -291,40 +333,54 @@ export function Wallpaper({
     })
     resizeObserver.observe(container)
 
+    // Nothing to animate while the canvas is scrolled out of view.
+    const intersectionObserver = new IntersectionObserver(([entry]) => {
+      onScreen = entry.isIntersecting
+      if (onScreen) start()
+      else stop()
+    })
+    intersectionObserver.observe(container)
+
+    field.drift = scrollDrift()
     sizeCanvases()
     drawStill()
     start()
+    redrawRef.current = () => {
+      if (frameId === 0) drawStill()
+    }
 
     document.addEventListener("visibilitychange", onVisibility)
     reducedMotion.addEventListener("change", onMotionPreference)
     window.addEventListener("pointermove", onPointerMove, { passive: true })
+    window.addEventListener("pointerdown", onPointerDown, { passive: true })
     document.documentElement.addEventListener("pointerleave", onPointerGone)
     window.addEventListener("blur", onPointerGone)
 
     return () => {
       stop()
-      offDesktopEvent()
+      redrawRef.current = null
+      offBackgroundEvent()
       resizeObserver.disconnect()
+      intersectionObserver.disconnect()
       document.removeEventListener("visibilitychange", onVisibility)
       reducedMotion.removeEventListener("change", onMotionPreference)
       window.removeEventListener("pointermove", onPointerMove)
+      window.removeEventListener("pointerdown", onPointerDown)
       document.documentElement.removeEventListener("pointerleave", onPointerGone)
       window.removeEventListener("blur", onPointerGone)
     }
-  }, [config])
+    // Only the values that size the simulation rebuild it; everything else is
+    // read live from configRef.
+  }, [particleCount, areaPerParticle, clusterCount, maxDevicePixelRatio])
 
   return (
     <div
       ref={containerRef}
       aria-hidden
-      className="pointer-events-none absolute inset-0 overflow-hidden"
-      style={{ backgroundColor: config.background }}
+      className={className}
+      style={{ pointerEvents: "none", overflow: "hidden" }}
     >
       <canvas ref={glowRef} className="absolute inset-0 size-full" />
-      <div
-        className="absolute inset-0 opacity-[0.07]"
-        style={{ backgroundImage: GRAIN }}
-      />
       <canvas ref={pointsRef} className="absolute inset-0 size-full" />
     </div>
   )

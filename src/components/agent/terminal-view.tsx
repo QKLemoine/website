@@ -25,7 +25,7 @@ import { complete } from "@/lib/terminal/complete"
 import type { Path } from "@/lib/terminal/filesystem"
 import { answerOffline } from "@/lib/terminal/offline-answer"
 
-import { emitDesktopEvent } from "@/components/background/events"
+import { emitBackgroundEvent } from "@/components/background/events"
 import type { OpenTarget } from "@/lib/terminal/commands"
 
 import { Cursor, EntryView, type Entry } from "./terminal-output"
@@ -122,12 +122,12 @@ export function TerminalView({
     const controller = new AbortController()
     abort.current = controller
 
-    // Let the wallpaper stir around the terminal while the answer streams.
+    // Let the background stir around the panel while the answer streams.
     const rect = rootRef.current?.getBoundingClientRect()
     const origin = rect
       ? { x: rect.left + rect.width / 2, y: rect.top + rect.height / 2 }
       : { x: 0, y: 0 }
-    emitDesktopEvent({ type: "activity", active: true, ...origin })
+    emitBackgroundEvent({ type: "activity", active: true, ...origin })
 
     let answer = ""
     const outcome = await streamChat(
@@ -147,7 +147,7 @@ export function TerminalView({
       }
     )
 
-    emitDesktopEvent({ type: "activity", active: false, ...origin })
+    emitBackgroundEvent({ type: "activity", active: false, ...origin })
     abort.current = null
     setBusy(false)
     // Settle the answer; drop it entirely if nothing arrived.

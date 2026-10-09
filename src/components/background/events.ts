@@ -1,23 +1,22 @@
 /**
- * A tiny event channel between the desktop UI and the wallpaper. The wallpaper
- * stays a standalone component: it never imports window or terminal code, it
- * only listens here.
+ * A tiny event channel into the background. The background stays a standalone
+ * component: it never imports page or agent code, it only listens here.
  */
-export type DesktopEvent =
-  /** A one-off ripple, e.g. when a window opens. Coordinates are viewport pixels. */
+export type BackgroundEvent =
+  /** A one-off ripple. Coordinates are viewport pixels. */
   | { type: "pulse"; x: number; y: number; strength?: number }
-  /** Sustained activity, e.g. while the terminal streams an answer. */
+  /** Sustained activity, e.g. while the agent streams an answer. */
   | { type: "activity"; active: boolean; x: number; y: number }
 
-type Listener = (event: DesktopEvent) => void
+type Listener = (event: BackgroundEvent) => void
 
 const listeners = new Set<Listener>()
 
-export function emitDesktopEvent(event: DesktopEvent) {
+export function emitBackgroundEvent(event: BackgroundEvent) {
   for (const listener of listeners) listener(event)
 }
 
-export function onDesktopEvent(listener: Listener): () => void {
+export function onBackgroundEvent(listener: Listener): () => void {
   listeners.add(listener)
   return () => {
     listeners.delete(listener)

@@ -1,4 +1,4 @@
-// The model behind the wallpaper: points that settle into slowly drifting
+// The model behind the background: points that settle into slowly drifting
 // clusters, like a 2D projection of an embedding space. No DOM in here, so the
 // same step function drives the animation and the single reduced-motion frame.
 
@@ -21,6 +21,8 @@ export type Field = {
   width: number
   height: number
   time: number
+  /** Extra travel along the cluster paths, in radians; driven by page scroll. */
+  drift: number
   x: Float32Array
   y: Float32Array
   vx: Float32Array
@@ -74,10 +76,16 @@ function updateCenters(field: Field) {
   for (let k = 0; k < field.clusterCount; k++) {
     field.centerX[k] =
       field.width *
-      (0.5 + 0.36 * Math.sin(field.time * field.speedX[k] + field.phaseX[k]))
+      (0.5 +
+        0.36 *
+          Math.sin(field.time * field.speedX[k] + field.phaseX[k] + field.drift))
     field.centerY[k] =
       field.height *
-      (0.5 + 0.32 * Math.cos(field.time * field.speedY[k] + field.phaseY[k]))
+      (0.5 +
+        0.32 *
+          Math.cos(
+            field.time * field.speedY[k] + field.phaseY[k] - field.drift * 0.7
+          ))
   }
 }
 
@@ -95,6 +103,7 @@ export function createField(
     width,
     height,
     time: Math.random() * 1000,
+    drift: 0,
     x: new Float32Array(n),
     y: new Float32Array(n),
     vx: new Float32Array(n),
@@ -156,7 +165,7 @@ export function addPulse(field: Field, x: number, y: number, strength = 1) {
 
 /**
  * Advances the field by `dt` seconds. `activity` (0–1) stirs the ambient flow,
- * used while the terminal is streaming.
+ * used while the agent is streaming.
  */
 export function stepField(
   field: Field,
