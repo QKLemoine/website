@@ -9,9 +9,9 @@ export type BackgroundLayers = {
 
 export type BackgroundConfig = {
   layers: BackgroundLayers
-  /** Page colour under everything. Never pure black or white. */
+  /** Page colour under everything. Comes from the --page token. */
   base: string
-  /** Four hues shared by every layer. */
+  /** Four hues shared by every layer. Come from the --field-1..4 tokens. */
   palette: [string, string, string, string]
   /** Add particle light to the page (dark themes) instead of painting over it (light themes). */
   additive: boolean
@@ -65,6 +65,12 @@ export type BackgroundConfig = {
   maxDevicePixelRatio: number
 }
 
+/** The two colour fields, which come from CSS tokens rather than from here. */
+export type BackgroundColors = Pick<BackgroundConfig, "base" | "palette">
+
+/** Everything about the background except its colours. */
+export type BackgroundSettings = Omit<BackgroundConfig, keyof BackgroundColors>
+
 const shared = {
   layers: { aurora: true, flow: true, clusters: true },
   auroraScale: 1.6,
@@ -80,36 +86,33 @@ const shared = {
   linkDistance: 86,
   interactionStrength: 1,
   interactionRadius: 190,
-  rippleStrength: 0.5,
   scrollParallax: 0.06,
   contentWidth: 1024,
   // 0.75 is the measured point where muted text keeps WCAG AA (4.5:1) on
   // every sampled block, including under ripples on a phone.
   contentDim: 0.75,
   maxDevicePixelRatio: 1.5,
-} satisfies Partial<BackgroundConfig>
+} satisfies Partial<BackgroundSettings>
 
-export const lightBackgroundConfig: BackgroundConfig = {
+// On the light page the field is painted in blue-grey tones a little darker
+// than the page; it has to stay low-contrast or it turns stark.
+export const lightBackgroundSettings: BackgroundSettings = {
   ...shared,
-  base: "#faf7f2",
-  palette: ["#3b82f6", "#8b5cf6", "#14b8a6", "#ec4899"],
   additive: false,
-  auroraIntensity: 0.2,
-  particleOpacity: 0.42,
-  nodeOpacity: 0.5,
-  lineOpacity: 0.22,
+  auroraIntensity: 0.18,
+  particleOpacity: 0.26,
+  nodeOpacity: 0.42,
+  lineOpacity: 0.2,
+  rippleStrength: 0.45,
 }
 
-export const darkBackgroundConfig: BackgroundConfig = {
+// On the navy page the same hues are added as light, so overlaps glow.
+export const darkBackgroundSettings: BackgroundSettings = {
   ...shared,
-  base: "#0a0e24",
-  palette: ["#60a5fa", "#a78bfa", "#2dd4bf", "#f472b6"],
   additive: true,
-  auroraIntensity: 0.26,
-  particleOpacity: 0.5,
-  nodeOpacity: 0.5,
-  // Bright additive ripples over light nodes are the one place dark-mode
-  // text contrast gets tight, so both are a touch lower here.
-  rippleStrength: 0.38,
-  lineOpacity: 0.2,
+  auroraIntensity: 0.24,
+  particleOpacity: 0.34,
+  nodeOpacity: 0.3,
+  lineOpacity: 0.18,
+  rippleStrength: 0.36,
 }

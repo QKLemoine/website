@@ -6,12 +6,13 @@
 import { useTheme } from "next-themes"
 import { useState, useSyncExternalStore } from "react"
 
-import { BackgroundLayer } from "./background-layer"
+import { BackgroundLayer, useBackgroundColors } from "./background-layer"
 import {
-  darkBackgroundConfig,
-  lightBackgroundConfig,
-  type BackgroundConfig,
+  darkBackgroundSettings,
+  lightBackgroundSettings,
+  type BackgroundColors,
   type BackgroundLayers,
+  type BackgroundSettings,
 } from "./config"
 import { emitBackgroundEvent } from "./events"
 import type { BackgroundStats } from "./reactive-background"
@@ -19,8 +20,10 @@ import type { BackgroundStats } from "./reactive-background"
 const QUALITY_NAMES = ["full", "fewer particles", "low resolution", "no trails"]
 
 type NumericKey = {
-  [K in keyof BackgroundConfig]: BackgroundConfig[K] extends number ? K : never
-}[keyof BackgroundConfig]
+  [K in keyof BackgroundSettings]: BackgroundSettings[K] extends number
+    ? K
+    : never
+}[keyof BackgroundSettings]
 
 type Slider = {
   key: NumericKey
@@ -98,18 +101,37 @@ export function BackgroundPlayground() {
     () => true,
     () => false
   )
-  const [light, setLight] = useState(lightBackgroundConfig)
-  const [dark, setDark] = useState(darkBackgroundConfig)
+  const [light, setLight] = useState(lightBackgroundSettings)
+  const [dark, setDark] = useState(darkBackgroundSettings)
+  // Colours start from the theme tokens; a picker edit overrides them for
+  // that theme until reset.
+  const tokenColors = useBackgroundColors()
+  const [lightColors, setLightColors] = useState<BackgroundColors | null>(null)
+  const [darkColors, setDarkColors] = useState<BackgroundColors | null>(null)
   const [collapsed, setCollapsed] = useState(false)
   const [copied, setCopied] = useState(false)
   const [stats, setStats] = useState<BackgroundStats | null>(null)
 
   const isDark = resolvedTheme === "dark"
   const config = isDark ? dark : light
-  const update = (patch: Partial<BackgroundConfig>) =>
+  const update = (patch: Partial<BackgroundSettings>) =>
     (isDark ? setDark : setLight)((current) => ({ ...current, ...patch }))
+  const override = isDark ? darkColors : lightColors
+  const colors = override ?? tokenColors
+  const updateColors = (next: BackgroundColors) =>
+    (isDark ? setDarkColors : setLightColors)(next)
 
-  const exported = JSON.stringify({ light, dark }, null, 2)
+  const exported = JSON.stringify(
+    {
+      [isDark ? "dark" : "light"]: { ...config, colors },
+      [isDark ? "light" : "dark"]: {
+        ...(isDark ? light : dark),
+        colors: (isDark ? lightColors : darkColors) ?? "unchanged (theme tokens)",
+      },
+    },
+    null,
+    2
+  )
 
   const simulateStreaming = () => {
     const origin = { x: window.innerWidth - 240, y: window.innerHeight - 300 }
@@ -122,7 +144,12 @@ export function BackgroundPlayground() {
 
   return (
     <div className="flex flex-1 flex-col">
-      <BackgroundLayer light={light} dark={dark} onStats={setStats} />
+      <BackgroundLayer
+        light={light}
+        dark={dark}
+        colors={override ?? undefined}
+        onStats={setStats}
+      />
 
       {/* Sample page content, to judge legibility and the per-section shift. */}
       <main>
@@ -180,11 +207,15 @@ export function BackgroundPlayground() {
                 Simulate agent streaming
               </PanelButton>
               <PanelButton
-                onClick={() =>
-                  (isDark ? setDark : setLight)(
-                    isDark ? darkBackgroundConfig : lightBackgroundConfig
-                  )
-                }
+                onClick={() => {
+                  if (isDark) {
+                    setDark(darkBackgroundSettings)
+                    setDarkColors(null)
+                  } else {
+                    setLight(lightBackgroundSettings)
+                    setLightColors(null)
+                  }
+                }}
               >
                 Reset this theme
               </PanelButton>
@@ -213,20 +244,20 @@ export function BackgroundPlayground() {
             <Group title="Colours">
               <ColorField
                 label="Base"
-                value={config.base}
-                onChange={(base) => update({ base })}
+                value={colors.base}
+                onChange={(base) => updateColors({ ...colors, base })}
               />
-              {config.palette.map((color, index) => (
+              {colors.palette.map((color, index) => (
                 <ColorField
                   key={index}
                   label={`Hue ${index + 1}`}
                   value={color}
                   onChange={(next) => {
-                    const palette: BackgroundConfig["palette"] = [
-                      ...config.palette,
+                    const palette: BackgroundColors["palette"] = [
+                      ...colors.palette,
                     ]
                     palette[index] = next
-                    update({ palette })
+                    updateColors({ ...colors, palette })
                   }}
                 />
               ))}

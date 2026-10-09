@@ -10,19 +10,6 @@
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
   --font-heading: var(--font-sans);
-  --color-sidebar-ring: var(--sidebar-ring);
-  --color-sidebar-border: var(--sidebar-border);
-  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
-  --color-sidebar-accent: var(--sidebar-accent);
-  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
-  --color-sidebar-primary: var(--sidebar-primary);
-  --color-sidebar-foreground: var(--sidebar-foreground);
-  --color-sidebar: var(--sidebar);
-  --color-chart-5: var(--chart-5);
-  --color-chart-4: var(--chart-4);
-  --color-chart-3: var(--chart-3);
-  --color-chart-2: var(--chart-2);
-  --color-chart-1: var(--chart-1);
   --color-ring: var(--ring);
   --color-input: var(--input);
   --color-border: var(--border);
@@ -48,76 +35,69 @@
   --radius-4xl: calc(var(--radius) * 2.6);
 }
 
+/*
+ * Colour tokens. Each theme defines seven palette values; every other colour
+ * on the site (including the animated background) is derived from them, so a
+ * palette change happens here and nowhere else.
+ */
 :root {
-  /* Warm off-white; matches lightBackgroundConfig.base. */
-  --background: #faf7f2;
-  --foreground: oklch(0.145 0 0);
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.145 0 0);
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.145 0 0);
-  --primary: oklch(0.205 0 0);
-  --primary-foreground: oklch(0.985 0 0);
-  --secondary: oklch(0.97 0 0);
-  --secondary-foreground: oklch(0.205 0 0);
-  --muted: oklch(0.97 0 0);
-  /* Darker than the stock grey: this text sits on a tinted, moving background. */
-  --muted-foreground: oklch(0.42 0.01 270);
-  --accent: oklch(0.97 0 0);
-  --accent-foreground: oklch(0.205 0 0);
-  --destructive: oklch(0.577 0.245 27.325);
-  --border: oklch(0.922 0 0);
-  --input: oklch(0.922 0 0);
-  --ring: oklch(0.708 0 0);
-  --chart-1: oklch(0.87 0 0);
-  --chart-2: oklch(0.556 0 0);
-  --chart-3: oklch(0.439 0 0);
-  --chart-4: oklch(0.371 0 0);
-  --chart-5: oklch(0.269 0 0);
+  --page: #e8ecf2;
+  --surface: #f2f4f8;
+  --elevated: #f8f9fb;
+  --line: #c9d1de;
+  --text: #0f1a2e;
+  --text-muted: #4a5873;
+  --brand: #2f5fd0;
+  /* Text on a --brand fill. */
+  --on-brand: #ffffff;
+
+  /* Hues of the animated background: blues with one steel-cyan. Must stay
+     6-digit hex; the canvas reads them directly. */
+  --field-1: #2f5fd0;
+  --field-2: #5b7fd6;
+  --field-3: #7f97c9;
+  --field-4: #5f93ae;
+
   --radius: 0.625rem;
-  --sidebar: oklch(0.985 0 0);
-  --sidebar-foreground: oklch(0.145 0 0);
-  --sidebar-primary: oklch(0.205 0 0);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.97 0 0);
-  --sidebar-accent-foreground: oklch(0.205 0 0);
-  --sidebar-border: oklch(0.922 0 0);
-  --sidebar-ring: oklch(0.708 0 0);
+  --destructive: oklch(0.577 0.245 27.325);
+
+  /* shadcn/ui roles, mapped onto the palette. */
+  --background: var(--page);
+  --foreground: var(--text);
+  --card: var(--surface);
+  --card-foreground: var(--text);
+  --popover: var(--elevated);
+  --popover-foreground: var(--text);
+  --primary: var(--brand);
+  --primary-foreground: var(--on-brand);
+  --secondary: var(--elevated);
+  --secondary-foreground: var(--text);
+  --muted: var(--elevated);
+  --muted-foreground: var(--text-muted);
+  --accent: var(--elevated);
+  --accent-foreground: var(--text);
+  --border: var(--line);
+  --input: var(--line);
+  --ring: var(--brand);
 }
 
 .dark {
-  /* Deep indigo; matches darkBackgroundConfig.base. Cards and popovers are tinted to sit on it. */
-  --background: #0a0e24;
-  --foreground: oklch(0.985 0 0);
-  --card: #121733;
-  --card-foreground: oklch(0.985 0 0);
-  --popover: #121733;
-  --popover-foreground: oklch(0.985 0 0);
-  --primary: oklch(0.922 0 0);
-  --primary-foreground: oklch(0.205 0 0);
-  --secondary: oklch(0.269 0 0);
-  --secondary-foreground: oklch(0.985 0 0);
-  --muted: oklch(0.269 0 0);
-  --muted-foreground: oklch(0.8 0.02 270);
-  --accent: oklch(0.269 0 0);
-  --accent-foreground: oklch(0.985 0 0);
+  --page: #0b1220;
+  --surface: #111a2e;
+  --elevated: #16213a;
+  --line: #24304a;
+  --text: #e6eaf2;
+  --text-muted: #9aa6bd;
+  --brand: #5b8def;
+  /* White on this lighter blue is only 3.3:1, so text on it is the page navy. */
+  --on-brand: #0b1220;
+
+  --field-1: #5b8def;
+  --field-2: #3d6fdb;
+  --field-3: #8fb3f7;
+  --field-4: #6fa8c4;
+
   --destructive: oklch(0.704 0.191 22.216);
-  --border: oklch(1 0 0 / 10%);
-  --input: oklch(1 0 0 / 15%);
-  --ring: oklch(0.556 0 0);
-  --chart-1: oklch(0.87 0 0);
-  --chart-2: oklch(0.556 0 0);
-  --chart-3: oklch(0.439 0 0);
-  --chart-4: oklch(0.371 0 0);
-  --chart-5: oklch(0.269 0 0);
-  --sidebar: oklch(0.205 0 0);
-  --sidebar-foreground: oklch(0.985 0 0);
-  --sidebar-primary: oklch(0.488 0.243 264.376);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.269 0 0);
-  --sidebar-accent-foreground: oklch(0.985 0 0);
-  --sidebar-border: oklch(1 0 0 / 10%);
-  --sidebar-ring: oklch(0.556 0 0);
 }
 
 @layer base {
