@@ -8,16 +8,18 @@ import { Button } from "@/components/ui/button"
 import { Reveal } from "@/components/motion/reveal"
 import { profile } from "@/lib/content"
 
+import { ScrollIndicator } from "./scroll-indicator"
+
 function HeroVisual() {
   return (
-    // 28vw clamped to 9rem-21rem: about 336px on a desktop, 144px on a phone,
+    // 28vw clamped to 9rem-21rem: about 336px on a desktop, 120px on a phone,
     // never full width. The corner radius scales with it.
-    <div className="relative aspect-4/5 w-[clamp(9rem,28vw,21rem)] overflow-hidden rounded-[clamp(0.75rem,2.2vw,1.5rem)] border border-border bg-muted/60 shadow-sm">
+    <div className="relative aspect-4/5 w-[clamp(7.5rem,28vw,21rem)] overflow-hidden rounded-[clamp(0.75rem,2.2vw,1.5rem)] border border-border bg-muted/60 shadow-sm">
       <Image
         src="/headshot.jpg"
         alt={profile.name}
         fill
-        sizes="(min-width: 1200px) 336px, (min-width: 520px) 28vw, 144px"
+        sizes="(min-width: 1200px) 336px, (min-width: 430px) 28vw, 120px"
         className="object-cover"
         priority
       />
@@ -27,9 +29,15 @@ function HeroVisual() {
 
 export function Hero() {
   return (
-    <section id="top">
-      <div className="mx-auto grid max-w-5xl grid-cols-1 items-center gap-8 px-6 py-24 sm:py-32 lg:grid-cols-[minmax(0,1fr)_auto] lg:gap-16">
-        <Reveal className="flex flex-col items-start gap-6">
+    // Viewport height minus the 3.5rem nav and 3rem more, so the top of the
+    // next section peeks above the fold. svh avoids a jump when mobile browser
+    // bars collapse.
+    <section
+      id="top"
+      className="flex min-h-[calc(100svh-3.5rem-3rem)] flex-col"
+    >
+      <div className="mx-auto grid w-full max-w-5xl flex-1 grid-cols-1 content-center items-center gap-6 px-6 py-6 sm:gap-8 sm:py-10 lg:grid-cols-[minmax(0,1fr)_auto] lg:gap-16">
+        <Reveal className="flex flex-col items-start gap-4 sm:gap-6">
           <p className="text-xl font-medium text-muted-foreground">
             Hi, I&apos;m {profile.name.split(" ")[0]}
           </p>
@@ -80,6 +88,9 @@ export function Hero() {
         <Reveal delay={0.15} className="order-first lg:order-none">
           <HeroVisual />
         </Reveal>
+      </div>
+      <div className="pb-5">
+        <ScrollIndicator targetId="projects" />
       </div>
     </section>
   )

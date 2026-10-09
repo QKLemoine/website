@@ -154,3 +154,14 @@
   outline-offset: 4px;
   animation: agent-highlight 1.8s ease-out;
 }
+
+/* The hero's "Scroll" chevron: a slow, small dip. */
+@keyframes scroll-hint {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(5px);
+  }
+}
