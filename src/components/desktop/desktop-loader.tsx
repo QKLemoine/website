@@ -39,7 +39,7 @@ export function DesktopLoader({ children }: { children: ReactNode }) {
           load reveals the static content instead of a black page. */}
       <div
         aria-hidden
-        className="fixed inset-0 z-40 hidden items-center justify-center bg-black font-(family-name:--font-geist-sans) text-3xl font-semibold tracking-tight text-white md:flex md:animate-[entry-veil-out_0.4s_ease-out_5s_forwards]"
+        className="fixed inset-0 z-40 hidden items-center justify-center bg-black text-3xl font-semibold tracking-tight text-white md:flex md:animate-[entry-veil-out_0.4s_ease-out_5s_forwards]"
       >
         {profile.name}
       </div>

@@ -17,12 +17,10 @@ export default function Desktop() {
 
   return (
     <WindowManagerProvider apps={APPS} initialApp="terminal">
-      {/* `dark` scopes the shadcn tokens so the OS is always dark, independent of
-          the classic site's theme. Geist is set explicitly because the global
-          --font-sans token currently resolves to the browser default. */}
+      {/* `dark` scopes the shadcn tokens so the OS is always dark, independent of the classic site's theme. */}
       <div
         data-desktop-root
-        className="dark fixed inset-0 z-50 overflow-hidden bg-[#06070b] font-(family-name:--font-geist-sans) text-foreground select-none"
+        className="dark fixed inset-0 z-50 overflow-hidden bg-[#06070b] font-sans text-foreground select-none"
       >
         <div inert={booting} className="absolute inset-0">
           <div
