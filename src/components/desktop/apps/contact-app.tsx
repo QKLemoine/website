@@ -11,7 +11,7 @@ export function ContactApp() {
     <div className="h-full overflow-y-auto p-6">
       <h2 className="text-lg font-semibold tracking-tight">Get in touch</h2>
       <p className="mt-1 text-sm text-muted-foreground">
-        Open to internships and new-grad roles in ML and software engineering.
+        {profile.availability}
       </p>
       <div className="mt-5 flex flex-col gap-2">
         <a href={`mailto:${profile.email}`} className={rowClass}>

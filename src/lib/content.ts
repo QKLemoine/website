@@ -7,6 +7,8 @@ export const profile = {
   linkedin: "https://linkedin.com/in/quintenlemoine",
   github: "https://github.com/QKLemoine",
   location: "Atlanta, GA",
+  availability:
+    "Open to internships and new-grad roles in ML and software engineering.",
 }
 
 export const about = [

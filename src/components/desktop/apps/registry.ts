@@ -2,10 +2,12 @@ import { FolderOpen, Mail, SquareTerminal, UserRound } from "lucide-react"
 import { memo } from "react"
 
 import type { AppDefinition, AppId } from "../types"
+
+export { CLASSIC_SITE } from "../classic-site"
 import { AboutApp } from "./about-app"
 import { ContactApp } from "./contact-app"
 import { ProjectsApp } from "./projects-app"
-import { TerminalApp } from "./terminal-app"
+import { TerminalApp } from "./terminal/terminal-app"
 
 // App components are memoized: a window re-renders on every drag frame, and its
 // content should not.
@@ -49,8 +51,6 @@ export const APPS: Record<AppId, AppDefinition> = {
 }
 
 export const APP_ORDER: AppId[] = ["terminal", "about", "projects", "contact"]
-
-export const CLASSIC_SITE = { title: "Classic Site", href: "/classic" }
 
 export function isAppId(value: string): value is AppId {
   return value in APPS
