@@ -1,10 +1,11 @@
-import { education, profile, skills } from "@/lib/content"
+import { education, experience, profile, projects, skills } from "@/lib/content"
 
 import {
   formatPath,
   getNode,
   resolvePath,
   ROOT,
+  slugify,
   type Path,
 } from "./filesystem"
 
@@ -14,13 +15,13 @@ export type Line = Span[]
 
 export const text = (value: string, tone?: Tone): Line => [{ text: value, tone }]
 
-/** Things `open` can launch: the desktop apps plus the classic site. */
+/** Page sections `open` can scroll to. */
 export const OPEN_TARGETS = [
-  "terminal",
-  "about",
   "projects",
+  "about",
+  "experience",
   "contact",
-  "classic",
+  "top",
 ] as const
 export type OpenTarget = (typeof OPEN_TARGETS)[number]
 
@@ -63,12 +64,52 @@ const COMMANDS: Record<string, Command> = {
           .map(([name, command]) =>
             text(`  ${(command.usage ?? name).padEnd(16)}${command.summary}`)
           ),
+        text("  ls, cd, cat     Browse the same content as files", "muted"),
         text(""),
         text(
           `Anything else is treated as a question about ${firstName}. Try: what has he built?`,
           "muted"
         ),
       ],
+    }),
+  },
+  projects: {
+    summary: `What ${firstName} has built`,
+    run: () => ({
+      lines: [
+        ...projects.flatMap((project): Line[] => [
+          [
+            {
+              text: project.title,
+              tone: "accent",
+              href: `#project-${slugify(project.title)}`,
+            },
+          ],
+          text(`  ${project.summary}`, "muted"),
+        ]),
+        text(""),
+        text("Select a title to jump to it on the page.", "muted"),
+      ],
+    }),
+  },
+  experience: {
+    summary: `Where ${firstName} has worked`,
+    run: () => ({
+      lines: [
+        ...experience.map((entry): Line => [
+          { text: `${entry.role} · ${entry.org}`, href: "#experience" },
+          { text: `  ${entry.dates}`, tone: "muted" },
+        ]),
+      ],
+    }),
+  },
+  skills: {
+    summary: "Languages, ML, robotics and tools",
+    run: () => ({
+      lines: skills.map((group): Line => [
+        { text: `${group.label}: `, tone: "accent" },
+        { text: group.items.join(", ") },
+      ]),
     }),
   },
   whoami: {
@@ -82,6 +123,7 @@ const COMMANDS: Record<string, Command> = {
     }),
   },
   ls: {
+    hidden: true,
     summary: "List files",
     usage: "ls [path]",
     run: ([target = "."], { cwd }) => {
@@ -104,6 +146,7 @@ const COMMANDS: Record<string, Command> = {
     },
   },
   cd: {
+    hidden: true,
     summary: "Change directory",
     usage: "cd [path]",
     run: ([target = "~"], { cwd }) => {
@@ -119,6 +162,7 @@ const COMMANDS: Record<string, Command> = {
     },
   },
   cat: {
+    hidden: true,
     summary: "Print a file",
     usage: "cat <file>",
     run: ([target], { cwd }) => {
@@ -134,27 +178,28 @@ const COMMANDS: Record<string, Command> = {
     },
   },
   pwd: {
+    hidden: true,
     summary: "Print the working directory",
     run: (_args, { cwd }) => ({
       lines: [text([HOME, ...cwd].join("/"))],
     }),
   },
   open: {
-    summary: `Open an app: ${OPEN_TARGETS.join(", ")}`,
-    usage: "open <app>",
+    summary: "Scroll the page to a section",
+    usage: "open <section>",
     run: ([target]) => {
       if (!target || !isOpenTarget(target))
         return {
           lines: [
             text(
-              target ? `open: unknown app: ${target}` : "usage: open <app>",
+              target ? `open: no such section: ${target}` : "usage: open <section>",
               target ? "error" : "muted"
             ),
             text(`Available: ${OPEN_TARGETS.join(", ")}`, "muted"),
           ],
         }
       return {
-        lines: [text(`Opening ${target}...`, "muted")],
+        lines: [text(`Scrolling to ${target}...`, "muted")],
         effect: { type: "open", target },
       }
     },
@@ -183,6 +228,7 @@ const COMMANDS: Record<string, Command> = {
     }),
   },
   history: {
+    hidden: true,
     summary: "Show what you've typed",
     run: (_args, { history }) => ({
       lines: history.map((entry, index) =>
@@ -257,7 +303,7 @@ const COMMANDS: Record<string, Command> = {
     run: () => ({
       lines: [
         text(
-          "There's no shell to return to. `open classic` takes you to the regular site.",
+          "There's no shell to return to. Press Esc to close this panel.",
           "muted"
         ),
       ],
@@ -273,7 +319,7 @@ const FREE_TEXT_COMMANDS = new Set(["echo", "sudo", "rm"])
 // A visitor may type "open source work?" or "history of his research". Input
 // that starts with a command word but reads like a sentence goes to chat.
 function readsLikeQuestion(raw: string, tokens: string[]): boolean {
-  if (FREE_TEXT_COMMANDS.has(tokens[0])) return false
+  if (FREE_TEXT_COMMANDS.has(tokens[0].replace(/^\//, ""))) return false
   return raw.includes("?") || tokens.length > 3
 }
 
@@ -285,7 +331,9 @@ export function runCommand(
   if (!raw) return { kind: "local", lines: [] }
 
   const tokens = raw.split(/\s+/)
-  const [name, ...args] = tokens
+  // A leading slash is optional: `/help` and `help` are the same command.
+  const name = tokens[0].replace(/^\//, "")
+  const args = tokens.slice(1)
   const command = COMMANDS[name.toLowerCase()]
 
   if (command && !readsLikeQuestion(raw, tokens)) {
@@ -318,6 +366,7 @@ export function runCommand(
   return { kind: "chat", question: raw }
 }
 
+/** The prompt shown before each command, e.g. "~/projects ›". */
 export function promptLabel(cwd: Path): string {
-  return `visitor@${firstName.toLowerCase()} ${formatPath(cwd)} %`
+  return `${formatPath(cwd)} ›`
 }

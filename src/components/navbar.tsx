@@ -11,6 +11,7 @@ import {
   SheetHeader,
   SheetTitle,
 } from "@/components/ui/sheet"
+import { AskButton } from "@/components/agent/ask-triggers"
 import { ThemeToggle } from "@/components/theme-toggle"
 import { profile } from "@/lib/content"
 
@@ -43,7 +44,8 @@ export function Navbar() {
           ))}
         </nav>
 
-        <div className="hidden items-center gap-1 sm:flex">
+        <div className="hidden items-center gap-2 sm:flex">
+          <AskButton />
           <ThemeToggle />
         </div>
 

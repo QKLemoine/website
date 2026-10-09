@@ -135,3 +135,19 @@
     color: inherit;
   }
 }
+
+/* Briefly outlines the element the agent just scrolled to. */
+@keyframes agent-highlight {
+  from {
+    outline-color: var(--ring);
+  }
+  to {
+    outline-color: transparent;
+  }
+}
+
+.agent-highlight {
+  outline: 2px solid transparent;
+  outline-offset: 4px;
+  animation: agent-highlight 1.8s ease-out;
+}

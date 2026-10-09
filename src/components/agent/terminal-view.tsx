@@ -5,6 +5,7 @@ import {
   useRef,
   useState,
   type KeyboardEvent as ReactKeyboardEvent,
+  type RefObject,
 } from "react"
 
 import {
@@ -20,20 +21,20 @@ import {
   runCommand,
   text,
   type Line,
+  type OpenTarget,
 } from "@/lib/terminal/commands"
 import { complete } from "@/lib/terminal/complete"
 import type { Path } from "@/lib/terminal/filesystem"
 import { answerOffline } from "@/lib/terminal/offline-answer"
 
 import { emitBackgroundEvent } from "@/components/background/events"
-import type { OpenTarget } from "@/lib/terminal/commands"
 
 import { Cursor, EntryView, type Entry } from "./terminal-output"
 
 const SUGGESTIONS = [
   "What has he built?",
   "What's his ML experience?",
-  "Where has he worked?",
+  "Is he open to roles?",
 ]
 
 type FailureReason = Exclude<Extract<ChatOutcome, { ok: false }>["reason"], "aborted">
@@ -53,9 +54,12 @@ const FAILURE: Record<FailureReason, string> = {
 }
 
 export function TerminalView({
+  inputRef,
   onOpen,
 }: {
-  /** Called when a command asks to open something (`open projects`). */
+  /** Owned by the panel so the dialog can focus the prompt when it opens. */
+  inputRef: RefObject<HTMLInputElement | null>
+  /** Called when a command asks to scroll somewhere (`open projects`). */
   onOpen: (target: OpenTarget) => void
 }) {
 
@@ -68,7 +72,6 @@ export function TerminalView({
   const [focused, setFocused] = useState(false)
 
   const rootRef = useRef<HTMLDivElement>(null)
-  const inputRef = useRef<HTMLInputElement>(null)
   const nextId = useRef(0)
   const history = useRef<string[]>([])
   const historyIndex = useRef<number | null>(null)
@@ -283,7 +286,7 @@ export function TerminalView({
           inputRef.current?.focus({ preventScroll: true })
         }
       }}
-      className="h-full cursor-text overflow-y-auto bg-[#0b0d10] p-3 font-mono text-[13px] leading-[1.5] text-zinc-200 select-text"
+      className="min-h-0 flex-1 cursor-text overflow-y-auto overscroll-contain p-3.5 font-mono text-[13px] leading-[1.55] text-zinc-200"
     >
       {showBanner && (
         <div className="mb-3">
@@ -291,10 +294,10 @@ export function TerminalView({
             {profile.name} · portfolio shell
           </p>
           <p className="text-zinc-400">
-            Type a question about me, or try:{" "}
+            Ask a question about me in plain English, or try:{" "}
             <span className="text-zinc-200">help</span>,{" "}
-            <span className="text-zinc-200">whoami</span>,{" "}
-            <span className="text-zinc-200">ls projects/</span>
+            <span className="text-zinc-200">projects</span>,{" "}
+            <span className="text-zinc-200">contact</span>
           </p>
           <div className="mt-2 flex flex-wrap gap-1.5">
             {SUGGESTIONS.map((suggestion) => (
@@ -331,6 +334,9 @@ export function TerminalView({
           {value.slice(0, caret)}
           <Cursor char={value[caret] ?? " "} focused={focused} />
           {value.slice(caret + 1)}
+          {value === "" && (
+            <span className="text-zinc-600"> ask anything, or type help</span>
+          )}
         </span>
         <input
           ref={inputRef}

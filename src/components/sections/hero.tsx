@@ -2,6 +2,7 @@ import Image from "next/image"
 
 import { Mail } from "lucide-react"
 
+import { AskPrompt } from "@/components/agent/ask-triggers"
 import { GitHubIcon, LinkedInIcon } from "@/components/icons"
 import { Button } from "@/components/ui/button"
 import { Reveal } from "@/components/motion/reveal"
@@ -74,6 +75,7 @@ export function Hero() {
               </li>
             ))}
           </ul>
+          <AskPrompt />
         </Reveal>
         <Reveal delay={0.15}>
           <HeroVisual />
