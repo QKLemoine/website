@@ -10,17 +10,17 @@ import { profile } from "@/lib/content"
 
 function HeroVisual() {
   return (
-    <div className="relative mx-auto w-full max-w-xs lg:max-w-sm">
-      <div className="relative aspect-4/5 w-full overflow-hidden rounded-[2rem] border border-border bg-muted/60 shadow-sm">
-        <Image
-          src="/headshot.jpg"
-          alt={profile.name}
-          fill
-          sizes="(min-width: 1024px) 24rem, (min-width: 640px) 20rem, 80vw"
-          className="object-cover"
-          priority
-        />
-      </div>
+    // 28vw clamped to 9rem-21rem: about 336px on a desktop, 144px on a phone,
+    // never full width. The corner radius scales with it.
+    <div className="relative aspect-4/5 w-[clamp(9rem,28vw,21rem)] overflow-hidden rounded-[clamp(0.75rem,2.2vw,1.5rem)] border border-border bg-muted/60 shadow-sm">
+      <Image
+        src="/headshot.jpg"
+        alt={profile.name}
+        fill
+        sizes="(min-width: 1200px) 336px, (min-width: 520px) 28vw, 144px"
+        className="object-cover"
+        priority
+      />
     </div>
   )
 }
@@ -28,7 +28,7 @@ function HeroVisual() {
 export function Hero() {
   return (
     <section id="top">
-      <div className="mx-auto grid max-w-5xl grid-cols-1 items-center gap-12 px-6 py-24 sm:py-32 lg:grid-cols-[1.1fr_0.9fr] lg:gap-8">
+      <div className="mx-auto grid max-w-5xl grid-cols-1 items-center gap-8 px-6 py-24 sm:py-32 lg:grid-cols-[minmax(0,1fr)_auto] lg:gap-16">
         <Reveal className="flex flex-col items-start gap-6">
           <p className="text-xl font-medium text-muted-foreground">
             Hi, I&apos;m {profile.name.split(" ")[0]}
@@ -77,7 +77,7 @@ export function Hero() {
           </ul>
           <AskPrompt />
         </Reveal>
-        <Reveal delay={0.15}>
+        <Reveal delay={0.15} className="order-first lg:order-none">
           <HeroVisual />
         </Reveal>
       </div>
