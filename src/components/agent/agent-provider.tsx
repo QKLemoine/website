@@ -1,6 +1,6 @@
 "use client"
 
-import { SquareTerminal } from "lucide-react"
+import { MessageCircle } from "lucide-react"
 import dynamic from "next/dynamic"
 import {
   createContext,
@@ -13,7 +13,7 @@ import {
   type ReactNode,
 } from "react"
 
-// The panel (dialog, terminal, commands, chat client) is a separate chunk
+// The panel (dialog, chat view, commands, chat client) is a separate chunk
 // that is only fetched the first time someone opens the agent.
 const loadPanel = () => import("./agent-panel")
 const AgentPanel = dynamic(loadPanel, { ssr: false })
@@ -96,7 +96,7 @@ function Launcher() {
       onFocus={preload}
       className="fixed right-4 bottom-4 z-40 flex h-12 items-center gap-2 rounded-full bg-primary px-4 text-sm font-medium text-primary-foreground shadow-lg outline-none transition-transform hover:-translate-y-0.5 focus-visible:ring-3 focus-visible:ring-ring/50 sm:right-5 sm:bottom-5"
     >
-      <SquareTerminal className="size-4.5" />
+      <MessageCircle className="size-4.5" />
       Ask me
       <kbd className="hidden rounded border border-primary-foreground/25 px-1.5 py-0.5 font-sans text-[11px] leading-none text-primary-foreground/70 sm:inline">
         {shortcut}

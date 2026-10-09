@@ -1,7 +1,6 @@
 import { education, experience, profile, projects, skills } from "@/lib/content"
 
 import {
-  formatPath,
   getNode,
   resolvePath,
   ROOT,
@@ -58,16 +57,17 @@ const COMMANDS: Record<string, Command> = {
     summary: "Show this list",
     run: () => ({
       lines: [
-        text("Commands", "accent"),
+        text("You can type these as shortcuts:"),
         ...Object.entries(COMMANDS)
           .filter(([, command]) => !command.hidden)
-          .map(([name, command]) =>
-            text(`  ${(command.usage ?? name).padEnd(16)}${command.summary}`)
-          ),
-        text("  ls, cd, cat     Browse the same content as files", "muted"),
+          .map(([name, command]): Line => [
+            { text: command.usage ?? name, tone: "accent" },
+            { text: `: ${command.summary}`, tone: "muted" },
+          ]),
+        text("ls, cd and cat browse the same content as files.", "muted"),
         text(""),
         text(
-          `Anything else is treated as a question about ${firstName}. Try: what has he built?`,
+          `Anything else is treated as a question about ${firstName}.`,
           "muted"
         ),
       ],
@@ -81,13 +81,12 @@ const COMMANDS: Record<string, Command> = {
           [
             {
               text: project.title,
-              tone: "accent",
               href: `#project-${slugify(project.title)}`,
             },
           ],
-          text(`  ${project.summary}`, "muted"),
+          text(project.summary, "muted"),
+          text(""),
         ]),
-        text(""),
         text("Select a title to jump to it on the page.", "muted"),
       ],
     }),
@@ -98,7 +97,7 @@ const COMMANDS: Record<string, Command> = {
       lines: [
         ...experience.map((entry): Line => [
           { text: `${entry.role} · ${entry.org}`, href: "#experience" },
-          { text: `  ${entry.dates}`, tone: "muted" },
+          { text: ` · ${entry.dates}`, tone: "muted" },
         ]),
       ],
     }),
@@ -209,7 +208,7 @@ const COMMANDS: Record<string, Command> = {
     run: () => ({
       lines: [
         [
-          { text: "Email     " },
+          { text: "Email: ", tone: "muted" },
           {
             text: profile.email,
             tone: "accent",
@@ -217,11 +216,11 @@ const COMMANDS: Record<string, Command> = {
           },
         ],
         [
-          { text: "LinkedIn  " },
+          { text: "LinkedIn: ", tone: "muted" },
           { text: profile.linkedin, tone: "accent", href: profile.linkedin },
         ],
         [
-          { text: "GitHub    " },
+          { text: "GitHub: ", tone: "muted" },
           { text: profile.github, tone: "accent", href: profile.github },
         ],
       ],
@@ -232,7 +231,7 @@ const COMMANDS: Record<string, Command> = {
     summary: "Show what you've typed",
     run: (_args, { history }) => ({
       lines: history.map((entry, index) =>
-        text(`${String(index + 1).padStart(4)}  ${entry}`)
+        text(`${index + 1}. ${entry}`)
       ),
     }),
   },
@@ -246,13 +245,11 @@ const COMMANDS: Record<string, Command> = {
     run: () => ({
       lines: [
         text(`${firstName.toLowerCase()}@portfolio`, "accent"),
-        text("-----------------"),
-        text(`Role      ${profile.title}`),
-        text(`School    ${education.school}`),
-        text(`Threads   ${education.threads.join(", ")}`),
-        text(`Location  ${profile.location}`),
-        text(`Stack     ${skills[0].items.join(", ")}`),
-        text("Shell     portfolio-sh, built on Next.js"),
+        text(`Role: ${profile.title}`),
+        text(`School: ${education.school}`),
+        text(`Threads: ${education.threads.join(", ")}`),
+        text(`Location: ${profile.location}`),
+        text(`Stack: ${skills[0].items.join(", ")}`),
       ],
     }),
   },
@@ -303,7 +300,7 @@ const COMMANDS: Record<string, Command> = {
     run: () => ({
       lines: [
         text(
-          "There's no shell to return to. Press Esc to close this panel.",
+          "Nothing to exit. Press Esc to close this panel.",
           "muted"
         ),
       ],
@@ -366,7 +363,10 @@ export function runCommand(
   return { kind: "chat", question: raw }
 }
 
-/** The prompt shown before each command, e.g. "~/projects ›". */
-export function promptLabel(cwd: Path): string {
-  return `${formatPath(cwd)} ›`
-}
+/** Commands offered as one-tap chips in the panel. */
+export const QUICK_ACTIONS = [
+  { label: "Projects", command: "projects" },
+  { label: "Experience", command: "experience" },
+  { label: "Skills", command: "skills" },
+  { label: "Contact", command: "contact" },
+] as const

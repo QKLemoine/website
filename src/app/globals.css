@@ -112,12 +112,6 @@
   }
 }
 
-@keyframes terminal-blink {
-  50% {
-    background-color: transparent;
-    color: inherit;
-  }
-}
 
 /* Briefly outlines the element the agent just scrolled to. */
 @keyframes agent-highlight {
