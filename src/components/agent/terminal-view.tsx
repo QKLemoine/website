@@ -1,6 +1,5 @@
 "use client"
 
-import { useRouter } from "next/navigation"
 import {
   useEffect,
   useRef,
@@ -26,9 +25,9 @@ import { complete } from "@/lib/terminal/complete"
 import type { Path } from "@/lib/terminal/filesystem"
 import { answerOffline } from "@/lib/terminal/offline-answer"
 
-import { CLASSIC_SITE } from "../../classic-site"
-import { emitDesktopEvent } from "../../desktop-events"
-import { useWindowActions } from "../../window/window-manager"
+import { emitDesktopEvent } from "@/components/background/events"
+import type { OpenTarget } from "@/lib/terminal/commands"
+
 import { Cursor, EntryView, type Entry } from "./terminal-output"
 
 const SUGGESTIONS = [
@@ -53,9 +52,12 @@ const FAILURE: Record<FailureReason, string> = {
   invalid_request: "I couldn't send that message. Try a shorter question.",
 }
 
-export function TerminalApp() {
-  const { open } = useWindowActions()
-  const router = useRouter()
+export function TerminalView({
+  onOpen,
+}: {
+  /** Called when a command asks to open something (`open projects`). */
+  onOpen: (target: OpenTarget) => void
+}) {
 
   const [entries, setEntries] = useState<Entry[]>([])
   const [showBanner, setShowBanner] = useState(true)
@@ -80,19 +82,6 @@ export function TerminalApp() {
     const root = rootRef.current
     if (root && stickToBottom.current) root.scrollTop = root.scrollHeight
   }, [entries, value, busy])
-
-  // The window focuses its own frame when it becomes active; pass that on to
-  // the prompt so typing works immediately. Listening on the DOM avoids
-  // subscribing the whole terminal to window-manager state.
-  useEffect(() => {
-    const frame = rootRef.current?.closest<HTMLElement>('[role="dialog"]')
-    if (!frame) return
-    const toPrompt = (event: FocusEvent) => {
-      if (event.target === frame) inputRef.current?.focus({ preventScroll: true })
-    }
-    frame.addEventListener("focus", toPrompt)
-    return () => frame.removeEventListener("focus", toPrompt)
-  }, [])
 
   useEffect(() => () => abort.current?.abort(), [])
 
@@ -214,10 +203,7 @@ export function TerminalApp() {
     }
     if (result.lines.length > 0) addOutput(result.lines)
     if (result.cwd) setCwd(result.cwd)
-    if (result.effect?.type === "open") {
-      if (result.effect.target === "classic") router.push(CLASSIC_SITE.href)
-      else open(result.effect.target)
-    }
+    if (result.effect?.type === "open") onOpen(result.effect.target)
   }
 
   function onKeyDown(event: ReactKeyboardEvent<HTMLInputElement>) {

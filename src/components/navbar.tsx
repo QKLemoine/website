@@ -15,11 +15,10 @@ import { ThemeToggle } from "@/components/theme-toggle"
 import { profile } from "@/lib/content"
 
 const links = [
-  { href: "#about", label: "About" },
   { href: "#projects", label: "Projects" },
+  { href: "#about", label: "About" },
   { href: "#experience", label: "Experience" },
   { href: "#contact", label: "Contact" },
-  { href: "/", label: "Desktop" },
 ]
 
 export function Navbar() {

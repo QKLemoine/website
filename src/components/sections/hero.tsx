@@ -1,5 +1,8 @@
 import Image from "next/image"
 
+import { Mail } from "lucide-react"
+
+import { GitHubIcon, LinkedInIcon } from "@/components/icons"
 import { Button } from "@/components/ui/button"
 import { Reveal } from "@/components/motion/reveal"
 import { profile } from "@/lib/content"
@@ -61,6 +64,25 @@ export function Hero() {
               Get in Touch
             </Button>
           </div>
+          <ul className="flex items-center gap-1 text-muted-foreground">
+            {[
+              { label: "GitHub", href: profile.github, icon: GitHubIcon },
+              { label: "LinkedIn", href: profile.linkedin, icon: LinkedInIcon },
+              { label: "Email", href: `mailto:${profile.email}`, icon: Mail },
+            ].map(({ label, href, icon: Icon }) => (
+              <li key={label}>
+                <a
+                  href={href}
+                  aria-label={label}
+                  target={href.startsWith("mailto:") ? undefined : "_blank"}
+                  rel="noreferrer"
+                  className="flex size-9 items-center justify-center rounded-lg transition-colors outline-none hover:bg-muted hover:text-foreground focus-visible:ring-3 focus-visible:ring-ring/50"
+                >
+                  <Icon className="size-[18px]" />
+                </a>
+              </li>
+            ))}
+          </ul>
         </Reveal>
         <Reveal delay={0.15}>
           <HeroVisual />

@@ -2,7 +2,7 @@
 
 import { useEffect, useRef } from "react"
 
-import { onDesktopEvent } from "../desktop-events"
+import { onDesktopEvent } from "./events"
 import { defaultWallpaperConfig, type WallpaperConfig } from "./config"
 import {
   addPulse,

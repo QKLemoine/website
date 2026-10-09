@@ -78,10 +78,19 @@ export const skills: SkillGroup[] = [
 
 export const spokenLanguages = ["English", "French", "Dutch"]
 
+export type ProjectLink = { label: string; href: string }
+
 export type Project = {
   title: string
+  /** One line for the card. */
+  summary: string
+  /** The longer write-up, shown when a card is expanded. */
   description: string
   tech: string[]
+  /** A concrete result or metric, shown on the card when present. */
+  outcome?: string
+  /** Repo, demo or paper links, shown on the card when present. */
+  links?: ProjectLink[]
   /** Optional preview image, e.g. "/projects/ai-personal-trainer.png". Shown at the top of the card with a hover zoom when set. */
   image?: string
 }
@@ -89,30 +98,40 @@ export type Project = {
 export const projects: Project[] = [
   {
     title: "AI Personal Trainer",
+    summary:
+      "A real-time computer vision coach that counts reps and assesses exercise form from a camera feed.",
     description:
       "A real-time computer vision pipeline that tracks body landmarks, computes joint angles, counts repetitions, and assesses exercise form — aimed at bringing quality fitness coaching to anyone with a camera. Landmark extraction is decoupled from correction logic in a modular pose-detection architecture, and Dynamic Time Warping compares a user's movement against reference form to drive live visual feedback.",
     tech: ["Python", "OpenCV", "MediaPipe", "Dynamic Time Warping"],
   },
   {
     title: "Autonomous Robotics Toolkit",
+    summary:
+      "From-scratch implementations of core robotics algorithms: segmentation, path planning, localization and imitation learning.",
     description:
       "A from-scratch sandbox for implementing and benchmarking foundational robotics algorithms without relying on black-box middleware. Includes a tabletop instance-segmentation pipeline (RANSAC plane fitting plus connected-components labeling) for raw RGB-D point clouds, a 2D path-planning library built on RRT* with recursive trajectory smoothing, a Monte Carlo Localization engine using particle filters and custom LiDAR ray-casting to solve the kidnapped-robot problem, and a behavioral-cloning module that trains neural network policies for multi-legged locomotion in MuJoCo.",
     tech: ["Python", "PyTorch", "MuJoCo"],
   },
   {
     title: "Pooling Strategy Analysis in CNNs",
+    summary:
+      "A mathematical and empirical comparison of CNN pooling methods across three PyTorch architectures.",
     description:
       "A mathematical and empirical study of how different CNN pooling methods affect feature extraction and classification accuracy. I designed and trained three image-classification architectures in PyTorch to benchmark training speed, inference efficiency, and accuracy tradeoffs across pooling strategies and hyperparameters on large-scale datasets.",
     tech: ["Python", "PyTorch"],
   },
   {
     title: "AI Paper Finder",
+    summary:
+      "A script that surfaces high-signal arXiv papers and summarizes their abstracts.",
     description:
       "A workflow tool for keeping pace with AI research. A custom Arxiv API script surfaces high-signal papers and automatically summarizes their abstracts, cutting down daily reading time while keeping me current with the field.",
     tech: ["Python", "Arxiv API"],
   },
   {
     title: "Course Scheduling Platform",
+    summary:
+      "A web app that gives teachers event management and students one calendar across all their classes.",
     description:
       "A web application that lets teachers manage class events and gives students a single consolidated calendar across every class they're enrolled in. Backed by a relational SQL schema modeling teachers, classes, students, and events, hosted on AWS RDS with schema design and query performance tuned for per-class and cross-class calendar queries.",
     tech: ["Python", "SQL", "AWS (RDS)"],

@@ -128,12 +128,6 @@
     @apply font-sans;
   }
 }
-@keyframes entry-veil-out {
-  to {
-    opacity: 0;
-    visibility: hidden;
-  }
-}
 
 @keyframes terminal-blink {
   50% {
