@@ -4,35 +4,35 @@ import { useEffect, useRef } from "react"
 
 import type { BackgroundConfig } from "./config"
 import { onBackgroundEvent } from "./events"
-import {
-  addPulse,
-  createField,
-  PULSE_LIFE,
-  PULSE_SPEED,
-  resizeField,
-  stepField,
-  type Field,
-  type Pointer,
-} from "./simulation"
+import { addRipple, createSim, resizeSim, stepSim } from "./flow-simulation"
+import { createRenderer, type Renderer } from "./renderer"
 
-/** The glow layer is drawn at 1/GLOW_SCALE resolution and stretched by CSS, which is both cheaper and softer. */
-const GLOW_SCALE = 10
-/** Soft gradients barely move, so they are redrawn every few frames. */
-const GLOW_EVERY = 4
 const MAX_STEP_SECONDS = 1 / 30
 /** A frame longer than this counts as slow (60fps is 16.7ms). */
 const SLOW_FRAME_MS = 22
 /** Gaps this long are pauses, not slow rendering, and are ignored. */
 const STALL_MS = 250
 const QUALITY_WINDOW_FRAMES = 120
-const MIN_PARTICLES = 60
-const ACTIVITY_PULSE_SECONDS = 0.9
-/** Points at or above this size use the thicker stroke. */
-const LARGE_POINT = 1.35
+const ACTIVITY_RIPPLE_SECONDS = 1.2
+/** One flow particle per this many CSS pixels, so phones aren't crowded. */
+const AREA_PER_PARTICLE = 480
 
-function rgba(hex: string, alpha: number): string {
-  const value = Number.parseInt(hex.slice(1), 16)
-  return `rgba(${(value >> 16) & 255}, ${(value >> 8) & 255}, ${value & 255}, ${alpha})`
+/**
+ * Quality ladder, walked downward when frames run long: fewer particles, then
+ * lower resolution, and finally no trail layer at all.
+ */
+const QUALITY = [
+  { particles: 1, maxDpr: Infinity, flow: true },
+  { particles: 0.6, maxDpr: Infinity, flow: true },
+  { particles: 0.35, maxDpr: 1, flow: true },
+  { particles: 0, maxDpr: 1, flow: false },
+] as const
+
+export type BackgroundStats = {
+  fps: number
+  particles: number
+  /** Index into the quality ladder; 0 is full quality. */
+  quality: number
 }
 
 function isLowPower(): boolean {
@@ -47,168 +47,135 @@ function isLowPower(): boolean {
   )
 }
 
-function drawGlow(
-  ctx: CanvasRenderingContext2D,
-  field: Field,
-  config: BackgroundConfig
-) {
-  const { width, height } = ctx.canvas
-  // Both layers stay transparent so the page's own background shows through
-  // and the component works on any theme.
-  ctx.clearRect(0, 0, width, height)
-  const radius = (Math.min(field.width, field.height) * 0.5) / GLOW_SCALE
-  for (let k = 0; k < field.clusterCount; k++) {
-    const cx = field.centerX[k] / GLOW_SCALE
-    const cy = field.centerY[k] / GLOW_SCALE
-    const color = config.palette[k % config.palette.length]
-    const gradient = ctx.createRadialGradient(cx, cy, 0, cx, cy, radius)
-    gradient.addColorStop(0, rgba(color, config.glowOpacity))
-    gradient.addColorStop(1, rgba(color, 0))
-    ctx.fillStyle = gradient
-    ctx.fillRect(cx - radius, cy - radius, radius * 2, radius * 2)
-  }
-}
-
-function drawPoints(
-  ctx: CanvasRenderingContext2D,
-  field: Field,
-  config: BackgroundConfig,
-  dpr: number,
-  activity: number
-) {
-  ctx.setTransform(dpr, 0, 0, dpr, 0, 0)
-  // Every frame starts from a clean canvas and each point is drawn as a short
-  // streak along its velocity. (Fading the previous frame instead looks
-  // similar but 8-bit alpha never decays to zero, leaving permanent ghosts.)
-  ctx.globalCompositeOperation = "source-over"
-  ctx.clearRect(0, 0, field.width, field.height)
-
-  ctx.globalCompositeOperation = config.blend
-  ctx.lineCap = "round"
-  const alpha = config.pointOpacity * (1 + activity * 0.35)
-  const trail = config.trailLength
-  // One path per cluster and size class: about ten strokes per frame in total.
-  for (let k = 0; k < field.clusterCount; k++) {
-    ctx.strokeStyle = rgba(config.palette[k % config.palette.length], alpha)
-    for (let large = 0; large < 2; large++) {
-      ctx.lineWidth = large ? 3 : 2
-      ctx.beginPath()
-      for (let i = 0; i < field.count; i++) {
-        if (field.cluster[i] !== k) continue
-        if (Number(field.size[i] >= LARGE_POINT) !== large) continue
-        const x = field.x[i]
-        const y = field.y[i]
-        // The tiny offset keeps a resting point from being a zero-length line.
-        ctx.moveTo(x - field.vx[i] * trail - 0.01, y - field.vy[i] * trail)
-        ctx.lineTo(x, y)
-      }
-      ctx.stroke()
-    }
-  }
-
-  ctx.globalCompositeOperation = "source-over"
-  for (const pulse of field.pulses) {
-    const life = 1 - pulse.age / PULSE_LIFE
-    ctx.strokeStyle = `rgba(${config.rippleColor}, ${0.14 * life * pulse.strength})`
-    ctx.lineWidth = 1.5
-    ctx.beginPath()
-    ctx.arc(pulse.x, pulse.y, pulse.age * PULSE_SPEED, 0, Math.PI * 2)
-    ctx.stroke()
-  }
+/** A plain CSS version of the aurora: shown without WebGL and before it starts. */
+function staticGradient(config: BackgroundConfig): string {
+  const [a, b, c, d] = config.palette
+  const alpha = Math.round(config.auroraIntensity * 0.6 * 255)
+    .toString(16)
+    .padStart(2, "0")
+  return [
+    `radial-gradient(60% 50% at 18% 22%, ${a}${alpha}, transparent)`,
+    `radial-gradient(55% 55% at 82% 30%, ${b}${alpha}, transparent)`,
+    `radial-gradient(60% 55% at 70% 85%, ${c}${alpha}, transparent)`,
+    `radial-gradient(45% 45% at 22% 80%, ${d}${alpha}, transparent)`,
+    config.base,
+  ].join(", ")
 }
 
 /**
- * Decorative animated background: points drifting between soft clusters, like
- * a projected embedding space. It reacts to the cursor, clicks and taps, page
- * scroll, and events sent through ./events. Fills its positioned parent.
+ * Decorative animated background in three layers: an aurora of slowly morphing
+ * colour, flow-field particles with trails, and clustered nodes joined by
+ * lines. It reacts to the cursor, clicks and taps, scrolling and events sent
+ * through ./events. Fills its positioned parent and never takes input.
  */
 export default function ReactiveBackground({
   config,
   className,
+  getSection,
+  onStats,
 }: {
   config: BackgroundConfig
   className?: string
+  /** Fractional index of the page section in view; defaults to viewports scrolled. */
+  getSection?: () => number
+  onStats?: (stats: BackgroundStats) => void
 }) {
   const containerRef = useRef<HTMLDivElement>(null)
-  const glowRef = useRef<HTMLCanvasElement>(null)
-  const pointsRef = useRef<HTMLCanvasElement>(null)
-  // Colours and strengths are read from here every frame, so a theme switch
-  // restyles the existing field instead of rebuilding it.
+  const canvasRef = useRef<HTMLCanvasElement>(null)
+  // Read every frame, so changing colours or strengths restyles the running
+  // field instead of rebuilding it.
   const configRef = useRef(config)
+  const getSectionRef = useRef(getSection)
+  const onStatsRef = useRef(onStats)
   const redrawRef = useRef<(() => void) | null>(null)
 
   useEffect(() => {
     configRef.current = config
+    getSectionRef.current = getSection
+    onStatsRef.current = onStats
     redrawRef.current?.()
-  }, [config])
+  }, [config, getSection, onStats])
 
-  const { particleCount, areaPerParticle, clusterCount, maxDevicePixelRatio } =
-    config
+  const { particleCount, nodeCount, clusterCount, maxDevicePixelRatio } = config
 
   useEffect(() => {
     const container = containerRef.current
-    const glowCanvas = glowRef.current
-    const pointsCanvas = pointsRef.current
-    const glow = glowCanvas?.getContext("2d")
-    const points = pointsCanvas?.getContext("2d")
-    if (!container || !glowCanvas || !pointsCanvas || !glow || !points) return
+    const canvas = canvasRef.current
+    if (!container || !canvas) return
+
+    let renderer: Renderer | null = createRenderer(canvas)
+    // Without WebGL the CSS gradient on the container is the whole background.
+    if (!renderer) return
+    canvas.style.opacity = "1"
 
     // Inner functions are arrows so TypeScript keeps the non-null narrowing above.
-    const lowPower = isLowPower()
-    let dpr = lowPower
-      ? 1
-      : Math.min(window.devicePixelRatio || 1, maxDevicePixelRatio)
+    let quality = isLowPower() ? 1 : 0
+    const deviceDpr = Math.min(
+      window.devicePixelRatio || 1,
+      maxDevicePixelRatio
+    )
     const width = container.clientWidth || 1
     const height = container.clientHeight || 1
-    const byArea = Math.round((width * height) / areaPerParticle)
-    const count = Math.max(
-      MIN_PARTICLES,
-      Math.round(Math.min(particleCount, byArea) * (lowPower ? 0.5 : 1))
+    const capacity = Math.max(
+      200,
+      Math.min(particleCount, Math.round((width * height) / AREA_PER_PARTICLE))
     )
-    const field = createField(
-      {
-        particleCount: count,
-        clusterCount,
-        interactionStrength: 0,
-        interactionRadius: 0,
-      },
+    const sim = createSim(
+      { particleCount: capacity, nodeCount, clusterCount },
       width,
       height
     )
 
-    const pointer: Pointer = { x: 0, y: 0, active: false }
     const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)")
+    const pointer = { x: width / 2, y: height / 2, active: false }
     let frameId = 0
     let lastTime = 0
     let frameCount = 0
     let slowFrames = 0
     let slowWindows = 0
+    let statsFrames = 0
+    let statsStart = 0
     let onScreen = true
     let activity = 0
     let activityTarget = 0
-    let activityOrigin = { x: 0, y: 0 }
-    let sinceActivityPulse = 0
+    let activityOrigin = { x: width / 2, y: height / 2 }
+    let sinceActivityRipple = 0
+    let lastScrollY = window.scrollY
 
-    const sizeCanvases = () => {
+    const currentDpr = () => Math.min(deviceDpr, QUALITY[quality].maxDpr)
+
+    const applyQuality = () => {
+      sim.count = Math.round(sim.capacity * QUALITY[quality].particles)
+    }
+
+    const resize = () => {
       const w = container.clientWidth || 1
       const h = container.clientHeight || 1
-      resizeField(field, w, h)
-      pointsCanvas.width = Math.round(w * dpr)
-      pointsCanvas.height = Math.round(h * dpr)
-      glowCanvas.width = Math.ceil(w / GLOW_SCALE)
-      glowCanvas.height = Math.ceil(h / GLOW_SCALE)
-      drawGlow(glow, field, configRef.current)
+      resizeSim(sim, w, h)
+      renderer?.resize(w, h, currentDpr())
     }
 
-    /** One finished-looking still image: used for reduced motion and whenever the loop is stopped. */
+    const section = () =>
+      getSectionRef.current?.() ??
+      window.scrollY / Math.max(window.innerHeight, 1)
+
+    const auroraScroll = () =>
+      (window.scrollY / Math.max(sim.height, 1)) *
+      configRef.current.scrollParallax *
+      6
+
+    /** Reduced motion and paused states: the aurora alone, frozen. */
     const drawStill = () => {
-      drawGlow(glow, field, configRef.current)
-      drawPoints(points, field, configRef.current, dpr, 0)
+      sim.section = section()
+      renderer?.render(sim, {
+        config: configRef.current,
+        flow: false,
+        clusters: false,
+        dt: 0,
+        activity: 0,
+        scroll: auroraScroll(),
+      })
     }
-
-    const scrollDrift = () =>
-      (window.scrollY / Math.max(window.innerHeight, 1)) *
-      configRef.current.scrollShift
 
     const frame = (now: number) => {
       const current = configRef.current
@@ -221,45 +188,74 @@ export default function ReactiveBackground({
 
       activity += (activityTarget - activity) * Math.min(1, dt * 3)
       if (activityTarget > 0) {
-        sinceActivityPulse += dt
-        if (sinceActivityPulse >= ACTIVITY_PULSE_SECONDS) {
-          sinceActivityPulse = 0
-          addPulse(field, activityOrigin.x, activityOrigin.y, 0.3)
+        sinceActivityRipple += dt
+        if (sinceActivityRipple >= ACTIVITY_RIPPLE_SECONDS) {
+          sinceActivityRipple = 0
+          addRipple(sim, activityOrigin.x, activityOrigin.y, 0.6)
         }
       }
 
-      // Scrolling moves the clusters along their paths. Easing toward the
-      // target turns a flick of the wheel into a slow glide of the whole field.
-      field.drift += (scrollDrift() - field.drift) * Math.min(1, dt * 2.5)
+      const scrollY = window.scrollY
+      const scrolled = scrollY - lastScrollY
+      lastScrollY = scrollY
 
-      stepField(field, dt, pointer, activity, {
-        particleCount: field.capacity,
-        clusterCount: field.clusterCount,
-        interactionStrength: current.interactionStrength,
-        interactionRadius: current.interactionRadius,
+      stepSim(
+        sim,
+        dt,
+        {
+          flowSpeed: current.flowSpeed,
+          flowScale: current.flowScale,
+          clusterPull: current.clusterPull,
+          interactionStrength: current.interactionStrength,
+          interactionRadius: current.interactionRadius,
+          linkDistance: current.linkDistance,
+        },
+        {
+          pointerX: pointer.x,
+          pointerY: pointer.y,
+          pointerActive: pointer.active,
+          section: section(),
+          // Clamped so a jump to an anchor doesn't fling every particle off screen.
+          parallaxShift:
+            Math.max(-40, Math.min(40, scrolled)) * current.scrollParallax,
+          activity,
+        }
+      )
+      renderer?.render(sim, {
+        config: current,
+        flow: current.layers.flow && QUALITY[quality].flow,
+        clusters: current.layers.clusters,
+        dt,
+        activity,
+        scroll: auroraScroll(),
       })
-      if (frameCount % GLOW_EVERY === 0) drawGlow(glow, field, current)
-      drawPoints(points, field, current, dpr, activity)
 
-      // Adaptive quality: if this device can't hold the frame rate, shed
-      // points and resolution rather than stutter. A step down needs most
-      // frames to be slow for two windows in a row, so a one-off stall (tab
-      // switch, GC) doesn't cost quality; and it never steps back up, so
-      // quality can't oscillate.
+      // Adaptive quality, measured from real frame times. A step down needs
+      // most frames to be slow for two windows in a row, so a one-off stall
+      // doesn't cost quality; and it never steps back up, so it can't oscillate.
       frameCount++
       if (elapsed > SLOW_FRAME_MS && elapsed < STALL_MS) slowFrames++
       if (frameCount % QUALITY_WINDOW_FRAMES === 0) {
         const slowWindow = slowFrames > QUALITY_WINDOW_FRAMES * 0.6
         slowFrames = 0
         slowWindows = slowWindow ? slowWindows + 1 : 0
-        if (slowWindows >= 2 && field.count > MIN_PARTICLES) {
+        if (slowWindows >= 2 && quality < QUALITY.length - 1) {
           slowWindows = 0
-          field.count = Math.max(MIN_PARTICLES, Math.floor(field.count * 0.65))
-          if (dpr > 1) {
-            dpr = 1
-            sizeCanvases()
-          }
+          quality++
+          applyQuality()
+          resize()
         }
+      }
+
+      statsFrames++
+      if (now - statsStart >= 1000) {
+        onStatsRef.current?.({
+          fps: Math.round((statsFrames * 1000) / (now - statsStart)),
+          particles: QUALITY[quality].flow ? sim.count : 0,
+          quality,
+        })
+        statsFrames = 0
+        statsStart = now
       }
 
       frameId = requestAnimationFrame(frame)
@@ -270,6 +266,9 @@ export default function ReactiveBackground({
         return
       lastTime = 0
       frameCount = 0
+      statsFrames = 0
+      statsStart = performance.now()
+      lastScrollY = window.scrollY
       frameId = requestAnimationFrame(frame)
     }
 
@@ -294,41 +293,45 @@ export default function ReactiveBackground({
       return { x: clientX - rect.left, y: clientY - rect.top }
     }
 
-    const onPointerMove = (event: PointerEvent) => {
-      // Touch has no hover; a finger dragging to scroll shouldn't shove the
-      // field around. Touch gets ripples and the scroll shift instead.
-      if (event.pointerType === "touch") return
+    const track = (event: PointerEvent) => {
       const local = toLocal(event.clientX, event.clientY)
       pointer.x = local.x
       pointer.y = local.y
       pointer.active = true
     }
 
-    const onPointerGone = () => {
-      pointer.active = false
-    }
+    // Mouse and pen hover; a finger only counts while it is down.
+    const onPointerMove = (event: PointerEvent) => track(event)
 
-    // Clicks and taps anywhere on the page send out a soft ripple.
     const onPointerDown = (event: PointerEvent) => {
       if (reducedMotion.matches) return
+      track(event)
       const local = toLocal(event.clientX, event.clientY)
-      addPulse(field, local.x, local.y, configRef.current.clickStrength)
+      addRipple(sim, local.x, local.y, 1)
+    }
+
+    const onPointerEnd = (event: PointerEvent) => {
+      if (event.pointerType === "touch") pointer.active = false
+    }
+
+    const onPointerGone = () => {
+      pointer.active = false
     }
 
     const offBackgroundEvent = onBackgroundEvent((event) => {
       if (reducedMotion.matches) return
       const local = toLocal(event.x, event.y)
       if (event.type === "pulse") {
-        addPulse(field, local.x, local.y, event.strength ?? 1)
+        addRipple(sim, local.x, local.y, event.strength ?? 1)
       } else {
         activityTarget = event.active ? 1 : 0
         activityOrigin = local
-        sinceActivityPulse = ACTIVITY_PULSE_SECONDS
+        sinceActivityRipple = ACTIVITY_RIPPLE_SECONDS
       }
     })
 
     const resizeObserver = new ResizeObserver(() => {
-      sizeCanvases()
+      resize()
       if (frameId === 0) drawStill()
     })
     resizeObserver.observe(container)
@@ -341,8 +344,22 @@ export default function ReactiveBackground({
     })
     intersectionObserver.observe(container)
 
-    field.drift = scrollDrift()
-    sizeCanvases()
+    // A lost GPU context (driver reset, too many tabs) stops drawing; pick up
+    // again with a fresh renderer when the browser restores it.
+    const onContextLost = (event: Event) => {
+      event.preventDefault()
+      stop()
+    }
+    const onContextRestored = () => {
+      renderer = createRenderer(canvas)
+      resize()
+      if (reducedMotion.matches) drawStill()
+      else start()
+    }
+
+    applyQuality()
+    sim.section = section()
+    resize()
     drawStill()
     start()
     redrawRef.current = () => {
@@ -353,8 +370,12 @@ export default function ReactiveBackground({
     reducedMotion.addEventListener("change", onMotionPreference)
     window.addEventListener("pointermove", onPointerMove, { passive: true })
     window.addEventListener("pointerdown", onPointerDown, { passive: true })
+    window.addEventListener("pointerup", onPointerEnd, { passive: true })
+    window.addEventListener("pointercancel", onPointerEnd, { passive: true })
     document.documentElement.addEventListener("pointerleave", onPointerGone)
     window.addEventListener("blur", onPointerGone)
+    canvas.addEventListener("webglcontextlost", onContextLost)
+    canvas.addEventListener("webglcontextrestored", onContextRestored)
 
     return () => {
       stop()
@@ -366,22 +387,36 @@ export default function ReactiveBackground({
       reducedMotion.removeEventListener("change", onMotionPreference)
       window.removeEventListener("pointermove", onPointerMove)
       window.removeEventListener("pointerdown", onPointerDown)
+      window.removeEventListener("pointerup", onPointerEnd)
+      window.removeEventListener("pointercancel", onPointerEnd)
       document.documentElement.removeEventListener("pointerleave", onPointerGone)
       window.removeEventListener("blur", onPointerGone)
+      canvas.removeEventListener("webglcontextlost", onContextLost)
+      canvas.removeEventListener("webglcontextrestored", onContextRestored)
+      renderer?.dispose()
+      canvas.style.opacity = "0"
     }
     // Only the values that size the simulation rebuild it; everything else is
     // read live from configRef.
-  }, [particleCount, areaPerParticle, clusterCount, maxDevicePixelRatio])
+  }, [particleCount, nodeCount, clusterCount, maxDevicePixelRatio])
 
   return (
     <div
       ref={containerRef}
       aria-hidden
       className={className}
-      style={{ pointerEvents: "none", overflow: "hidden" }}
+      style={{
+        pointerEvents: "none",
+        overflow: "hidden",
+        background: staticGradient(config),
+      }}
     >
-      <canvas ref={glowRef} className="absolute inset-0 size-full" />
-      <canvas ref={pointsRef} className="absolute inset-0 size-full" />
+      {/* Hidden until WebGL has drawn, so a device without it keeps the gradient. */}
+      <canvas
+        ref={canvasRef}
+        className="absolute inset-0 size-full"
+        style={{ opacity: 0 }}
+      />
     </div>
   )
 }
