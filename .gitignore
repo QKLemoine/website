@@ -32,6 +32,11 @@ yarn-error.log*
 
 # env files (can opt-in for committing if needed)
 .env*
+!.env.example
+
+# private source material (resumes contain a phone number) and local tool config with token fields
+/content/
+.mcp.json
 
 # vercel
 .vercel
