@@ -15,6 +15,67 @@ export const about = [
   "My background started in hands-on fabrication — I led machining for my FRC robotics team through back-to-back World Championship appearances — and that first-principles instinct carries into how I build software: modular, benchmarked, and rebuilt from scratch when it helps me understand it better. I'm fluent in English, French, and Dutch (native).",
 ]
 
+export const education = {
+  school: "Georgia Institute of Technology",
+  location: "Atlanta, GA",
+  degree: "Bachelor of Science in Computer Science",
+  threads: ["Intelligence", "Theory"],
+  coursework: [
+    "Data Structures & Algorithms",
+    "Discrete Mathematics",
+    "Linear Algebra",
+    "Probability & Statistics",
+    "Theory of Computation",
+    "Advanced Algorithms",
+    "Artificial Intelligence",
+  ],
+}
+
+export type SkillGroup = { label: string; items: string[] }
+
+export const skills: SkillGroup[] = [
+  { label: "Languages", items: ["Python", "Java", "C", "SQL"] },
+  {
+    label: "Machine Learning",
+    items: [
+      "Deep Learning",
+      "Computer Vision",
+      "LSTMs",
+      "Reinforcement Learning",
+      "Behavioral Cloning",
+      "Model Evaluation",
+    ],
+  },
+  {
+    label: "Robotics",
+    items: [
+      "ROS",
+      "Multi-Agent Systems",
+      "State Estimation",
+      "Monte Carlo Localization",
+      "RRT*",
+      "LiDAR / IMU fusion",
+    ],
+  },
+  {
+    label: "Tools",
+    items: [
+      "PyTorch",
+      "OpenCV",
+      "MediaPipe",
+      "YOLO",
+      "MuJoCo",
+      "Git",
+      "Jenkins",
+      "AWS (RDS)",
+      "CNC",
+      "CAD",
+    ],
+  },
+]
+
+export const spokenLanguages = ["English", "French", "Dutch"]
+
 export type Project = {
   title: string
   description: string
