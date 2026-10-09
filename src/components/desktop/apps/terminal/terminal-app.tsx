@@ -27,6 +27,7 @@ import type { Path } from "@/lib/terminal/filesystem"
 import { answerOffline } from "@/lib/terminal/offline-answer"
 
 import { CLASSIC_SITE } from "../../classic-site"
+import { emitDesktopEvent } from "../../desktop-events"
 import { useWindowActions } from "../../window/window-manager"
 import { Cursor, EntryView, type Entry } from "./terminal-output"
 
@@ -132,6 +133,13 @@ export function TerminalApp() {
     const controller = new AbortController()
     abort.current = controller
 
+    // Let the wallpaper stir around the terminal while the answer streams.
+    const rect = rootRef.current?.getBoundingClientRect()
+    const origin = rect
+      ? { x: rect.left + rect.width / 2, y: rect.top + rect.height / 2 }
+      : { x: 0, y: 0 }
+    emitDesktopEvent({ type: "activity", active: true, ...origin })
+
     let answer = ""
     const outcome = await streamChat(
       [...turns.current, { role: "user", content: question }],
@@ -150,6 +158,7 @@ export function TerminalApp() {
       }
     )
 
+    emitDesktopEvent({ type: "activity", active: false, ...origin })
     abort.current = null
     setBusy(false)
     // Settle the answer; drop it entirely if nothing arrived.

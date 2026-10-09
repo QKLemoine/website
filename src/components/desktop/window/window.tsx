@@ -6,6 +6,7 @@ import { memo, useEffect, useRef, type CSSProperties } from "react"
 
 import { cn } from "@/lib/utils"
 
+import { emitDesktopEvent } from "../desktop-events"
 import { DOCK_RESERVED, MENU_BAR_HEIGHT, TITLE_BAR_HEIGHT } from "../layout-constants"
 import type { AppDefinition, WindowState } from "../types"
 import { useWindowPointer, type ResizeEdge } from "./use-window-pointer"
@@ -52,6 +53,17 @@ export const Window = memo(function Window({
     disabled: win.maximized,
     onChange: (bounds) => actions.setBounds(app.id, bounds),
   })
+
+  // Tell the wallpaper a window appeared, so it can ripple from that spot.
+  useEffect(() => {
+    const rect = ref.current?.getBoundingClientRect()
+    if (!rect) return
+    emitDesktopEvent({
+      type: "pulse",
+      x: rect.left + rect.width / 2,
+      y: rect.top + rect.height / 2,
+    })
+  }, [])
 
   // Move keyboard focus with window focus (open, dock click, another window closing).
   useEffect(() => {

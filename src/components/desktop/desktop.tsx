@@ -8,6 +8,7 @@ import { BootScreen, shouldBoot } from "./boot-screen"
 import { DesktopIcons } from "./desktop-icons"
 import { Dock } from "./dock"
 import { MenuBar } from "./menu-bar"
+import { Wallpaper } from "./wallpaper/wallpaper"
 import { Window } from "./window/window"
 import { useWindows, WindowManagerProvider } from "./window/window-manager"
 
@@ -23,10 +24,7 @@ export default function Desktop() {
         className="dark fixed inset-0 z-50 overflow-hidden bg-[#06070b] font-sans text-foreground select-none"
       >
         <div inert={booting} className="absolute inset-0">
-          <div
-            aria-hidden
-            className="absolute inset-0 bg-[radial-gradient(ellipse_80%_60%_at_30%_20%,#1b2550_0%,transparent_60%),radial-gradient(ellipse_70%_60%_at_80%_80%,#0f3a44_0%,transparent_60%)]"
-          />
+          <Wallpaper />
           <MenuBar />
           <DesktopIcons />
           <WindowLayer />
