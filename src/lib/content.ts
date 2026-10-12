@@ -1,6 +1,8 @@
 export const profile = {
   name: "Quinten Lemoine",
   title: "AI/ML Developer & Technical Researcher",
+  /** The one part of the title shown in the accent colour. Must appear in it. */
+  titleHighlight: "AI/ML",
   pitch:
     "Building machine learning models and autonomous systems — from clinical genomics to multi-robot perception.",
   email: "qklemoine@gmail.com",
@@ -9,7 +11,18 @@ export const profile = {
   location: "Atlanta, GA",
   availability:
     "Open to internships and new-grad roles in ML and software engineering.",
+  /** Shown in the hero after "Currently:". Keep it to one line. */
+  currently:
+    "AI/Clinical Data Intern at FDNA, building ML models for genetic-disease diagnosis.",
 }
+
+/** Example questions the hero's "Ask me" bar cycles through. */
+export const askExamples = [
+  "What are you working on at FDNA?",
+  "How accurate is the flood prediction model?",
+  "Which robotics algorithms have you built from scratch?",
+  "Are you open to internships?",
+]
 
 export const about = [
   "I'm a Computer Science student at Georgia Tech (Intelligence and Theory threads), currently working as an AI/Clinical Data Intern at FDNA, where I help build machine learning models that support genetic-disease diagnosis for geneticists in 130+ countries — cleaning and preparing real-world clinical data spanning 100,000+ patients and helping evaluate model performance across disease categories.",
@@ -87,12 +100,21 @@ export type Project = {
   /** The longer write-up, shown when a card is expanded. */
   description: string
   tech: string[]
-  /** A concrete result or metric, shown on the card when present. */
-  outcome?: string
+  /**
+   * The one concrete result the card leads with. `metric` is the few words
+   * shown in the accent colour; `label` finishes the sentence.
+   */
+  outcome?: { metric: string; label: string }
   /** Repo, demo or paper links, shown on the card when present. */
   links?: ProjectLink[]
-  /** Optional preview image, e.g. "/projects/ai-personal-trainer.png". Shown at the top of the card with a hover zoom when set. */
+  /**
+   * Optional figure, screenshot or demo GIF, e.g.
+   * "/projects/ai-personal-trainer.gif". A thumbnail appears on hover and the
+   * full image when the card is expanded.
+   */
   image?: string
+  /** Describes the image for screen readers. */
+  imageAlt?: string
 }
 
 export const projects: Project[] = [
@@ -103,6 +125,10 @@ export const projects: Project[] = [
     description:
       "A real-time computer vision pipeline that tracks body landmarks, computes joint angles, counts repetitions, and assesses exercise form — aimed at bringing quality fitness coaching to anyone with a camera. Landmark extraction is decoupled from correction logic in a modular pose-detection architecture, and Dynamic Time Warping compares a user's movement against reference form to drive live visual feedback.",
     tech: ["Python", "OpenCV", "MediaPipe", "Dynamic Time Warping"],
+    outcome: {
+      metric: "Real-time",
+      label: "rep counting and form feedback from a single camera",
+    },
   },
   {
     title: "Autonomous Robotics Toolkit",
@@ -111,6 +137,10 @@ export const projects: Project[] = [
     description:
       "A from-scratch sandbox for implementing and benchmarking foundational robotics algorithms without relying on black-box middleware. Includes a tabletop instance-segmentation pipeline (RANSAC plane fitting plus connected-components labeling) for raw RGB-D point clouds, a 2D path-planning library built on RRT* with recursive trajectory smoothing, a Monte Carlo Localization engine using particle filters and custom LiDAR ray-casting to solve the kidnapped-robot problem, and a behavioral-cloning module that trains neural network policies for multi-legged locomotion in MuJoCo.",
     tech: ["Python", "PyTorch", "MuJoCo"],
+    outcome: {
+      metric: "4 algorithms",
+      label: "built from scratch, with no black-box middleware",
+    },
   },
   {
     title: "Pooling Strategy Analysis in CNNs",
@@ -119,6 +149,10 @@ export const projects: Project[] = [
     description:
       "A mathematical and empirical study of how different CNN pooling methods affect feature extraction and classification accuracy. I designed and trained three image-classification architectures in PyTorch to benchmark training speed, inference efficiency, and accuracy tradeoffs across pooling strategies and hyperparameters on large-scale datasets.",
     tech: ["Python", "PyTorch"],
+    outcome: {
+      metric: "3 architectures",
+      label: "benchmarked on training speed, inference cost and accuracy",
+    },
   },
   {
     title: "AI Paper Finder",
@@ -127,6 +161,10 @@ export const projects: Project[] = [
     description:
       "A workflow tool for keeping pace with AI research. A custom Arxiv API script surfaces high-signal papers and automatically summarizes their abstracts, cutting down daily reading time while keeping me current with the field.",
     tech: ["Python", "Arxiv API"],
+    outcome: {
+      metric: "Daily digest",
+      label: "of high-signal arXiv papers with summarized abstracts",
+    },
   },
   {
     title: "Course Scheduling Platform",
@@ -135,6 +173,10 @@ export const projects: Project[] = [
     description:
       "A web application that lets teachers manage class events and gives students a single consolidated calendar across every class they're enrolled in. Backed by a relational SQL schema modeling teachers, classes, students, and events, hosted on AWS RDS with schema design and query performance tuned for per-class and cross-class calendar queries.",
     tech: ["Python", "SQL", "AWS (RDS)"],
+    outcome: {
+      metric: "1 calendar",
+      label: "across every class a student is enrolled in",
+    },
   },
 ]
 

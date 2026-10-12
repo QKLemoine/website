@@ -41,10 +41,7 @@ export function ScrollIndicator({ targetId }: { targetId: string }) {
       )}
     >
       Scroll
-      <ChevronDown
-        aria-hidden
-        className="size-4 animate-[scroll-hint_2.4s_ease-in-out_infinite] motion-reduce:animate-none"
-      />
+      <ChevronDown aria-hidden className="size-4" />
     </button>
   )
 }

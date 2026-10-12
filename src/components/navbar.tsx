@@ -37,7 +37,7 @@ export function Navbar() {
             <a
               key={link.href}
               href={link.href}
-              className="transition-colors hover:text-foreground"
+              className="decoration-primary decoration-2 underline-offset-8 transition-colors hover:text-foreground hover:underline"
             >
               {link.label}
             </a>

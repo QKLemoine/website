@@ -2,13 +2,7 @@
 
 import dynamic from "next/dynamic"
 import { useTheme } from "next-themes"
-import {
-  useCallback,
-  useEffect,
-  useMemo,
-  useRef,
-  useSyncExternalStore,
-} from "react"
+import { useMemo, useSyncExternalStore } from "react"
 
 import {
   darkBackgroundSettings,
@@ -17,15 +11,13 @@ import {
   type BackgroundSettings,
 } from "./config"
 
-import type { BackgroundStats } from "./reactive-background"
-
 // Client-only and in its own chunk: the background is decoration, so it never
 // delays the page's content or first paint.
 const ReactiveBackground = dynamic(() => import("./reactive-background"), {
   ssr: false,
 })
 
-const COLOR_TOKENS = ["--page", "--field-1", "--field-2", "--field-3", "--field-4"]
+const COLOR_TOKENS = ["--text-muted", "--brand"]
 const HEX = /^#[0-9a-f]{6}$/i
 
 function readColorTokens(): string {
@@ -47,89 +39,40 @@ function subscribeToTheme(onChange: () => void) {
  * The background's colours, read from the CSS tokens of the active theme so
  * the canvas and the page can never disagree.
  */
-export function useBackgroundColors(): BackgroundColors {
+function useBackgroundColors(): BackgroundColors {
   const tokens = useSyncExternalStore(subscribeToTheme, readColorTokens, () => "")
   return useMemo(() => {
     // The canvas needs plain hex; anything else falls back to a neutral grey.
-    const [base, ...hues] = tokens
+    const [ink, accent] = tokens
       .split(",")
       .map((value) => (HEX.test(value) ? value : "#808080"))
-    return {
-      base: base ?? "#808080",
-      palette: [
-        hues[0] ?? "#808080",
-        hues[1] ?? "#808080",
-        hues[2] ?? "#808080",
-        hues[3] ?? "#808080",
-      ],
-    }
+    return { ink: ink ?? "#808080", accent: accent ?? "#808080" }
   }, [tokens])
 }
 
 /**
- * Tracks which `main > section` is at the middle of the viewport, as a
- * fractional index, so the background can shift between sections.
+ * The background of one section, themed to match. Give the section
+ * `relative isolate` so this sits behind its content and nothing else.
  */
-function useSectionProgress(): () => number {
-  const tops = useRef<number[]>([])
-
-  useEffect(() => {
-    const main = document.querySelector("main")
-    if (!main) return
-    const measure = () => {
-      tops.current = Array.from(
-        main.querySelectorAll<HTMLElement>(":scope > section")
-      ).map((section) => section.getBoundingClientRect().top + window.scrollY)
-    }
-    measure()
-    // Section heights change when disclosures open, fonts load, or the window resizes.
-    const observer = new ResizeObserver(measure)
-    observer.observe(main)
-    return () => observer.disconnect()
-  }, [])
-
-  return useCallback(() => {
-    const list = tops.current
-    if (list.length === 0) return window.scrollY / Math.max(window.innerHeight, 1)
-    const middle = window.scrollY + window.innerHeight / 2
-    let index = 0
-    while (index < list.length - 1 && middle >= list[index + 1]) index++
-    const start = list[index]
-    const end =
-      list[index + 1] ?? document.documentElement.scrollHeight
-    const fraction = Math.max(0, Math.min(1, (middle - start) / (end - start)))
-    return index + fraction
-  }, [])
-}
-
-/** The page-wide background: fixed behind all content, themed to match. */
 export function BackgroundLayer({
   light = lightBackgroundSettings,
   dark = darkBackgroundSettings,
-  colors,
-  onStats,
+  fadeOnScroll = false,
 }: {
   light?: BackgroundSettings
   dark?: BackgroundSettings
-  /** Overrides the theme tokens; only the tuning playground uses this. */
-  colors?: BackgroundColors
-  onStats?: (stats: BackgroundStats) => void
+  fadeOnScroll?: boolean
 }) {
   const { resolvedTheme } = useTheme()
-  const tokenColors = useBackgroundColors()
-  const getSection = useSectionProgress()
+  const colors = useBackgroundColors()
   const settings = resolvedTheme === "dark" ? dark : light
-  const config = useMemo(
-    () => ({ ...settings, ...(colors ?? tokenColors) }),
-    [settings, colors, tokenColors]
-  )
+  const config = useMemo(() => ({ ...settings, ...colors }), [settings, colors])
 
   return (
     <ReactiveBackground
       config={config}
-      getSection={getSection}
-      onStats={onStats}
-      className="fixed inset-0 -z-10"
+      fadeOnScroll={fadeOnScroll}
+      className="absolute inset-0 -z-10"
     />
   )
 }

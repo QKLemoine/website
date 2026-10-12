@@ -34,7 +34,7 @@ export function Experience() {
                   <span aria-hidden className="text-border">
                     •
                   </span>
-                  <span>{entry.dates}</span>
+                  <span className="text-signal">{entry.dates}</span>
                 </p>
                 <p className="mt-2 text-sm leading-relaxed text-foreground/90">
                   {lead}

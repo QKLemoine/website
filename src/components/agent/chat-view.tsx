@@ -10,7 +10,6 @@ import {
   type RefObject,
 } from "react"
 
-import { emitBackgroundEvent } from "@/components/background/events"
 import {
   MAX_ASSISTANT_CHARS,
   MAX_INPUT_CHARS,
@@ -113,13 +112,6 @@ export function ChatView({
     const controller = new AbortController()
     abort.current = controller
 
-    // Let the background stir around the panel while the answer streams.
-    const rect = scrollRef.current?.getBoundingClientRect()
-    const origin = rect
-      ? { x: rect.left + rect.width / 2, y: rect.top + rect.height / 2 }
-      : { x: 0, y: 0 }
-    emitBackgroundEvent({ type: "activity", active: true, ...origin })
-
     let answer = ""
     const outcome = await streamChat(
       [...turns.current, { role: "user", content: question }],
@@ -138,7 +130,6 @@ export function ChatView({
       }
     )
 
-    emitBackgroundEvent({ type: "activity", active: false, ...origin })
     abort.current = null
     setBusy(false)
     // Settle the answer; drop it entirely if nothing arrived.

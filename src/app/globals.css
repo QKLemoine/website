@@ -26,6 +26,7 @@
   --color-popover: var(--popover);
   --color-card-foreground: var(--card-foreground);
   --color-card: var(--card);
+  --color-signal: var(--signal);
   --radius-sm: calc(var(--radius) * 0.6);
   --radius-md: calc(var(--radius) * 0.8);
   --radius-lg: var(--radius);
@@ -36,9 +37,13 @@
 }
 
 /*
- * Colour tokens. Each theme defines seven palette values; every other colour
- * on the site (including the animated background) is derived from them, so a
+ * Colour tokens. Each theme defines eight palette values; every other colour
+ * on the site (including the hero background) is derived from them, so a
  * palette change happens here and nowhere else.
+ *
+ * --brand and --signal are accents for small things only: links, tags, dates,
+ * focus rings, one metric per card. Never a large fill. Both pass WCAG AA
+ * (4.5:1) as text on --page, --surface and --elevated in their theme.
  */
 :root {
   --page: #e8ecf2;
@@ -50,13 +55,8 @@
   --brand: #2f5fd0;
   /* Text on a --brand fill. */
   --on-brand: #ffffff;
-
-  /* Hues of the animated background: blues with one steel-cyan. Must stay
-     6-digit hex; the canvas reads them directly. */
-  --field-1: #2f5fd0;
-  --field-2: #5b7fd6;
-  --field-3: #7f97c9;
-  --field-4: #5f93ae;
+  /* Secondary accent, a warm amber: 5.0:1 on --page, 5.4 on --surface. */
+  --signal: #8a5a00;
 
   --radius: 0.625rem;
   --destructive: oklch(0.577 0.245 27.325);
@@ -91,11 +91,8 @@
   --brand: #5b8def;
   /* White on this lighter blue is only 3.3:1, so text on it is the page navy. */
   --on-brand: #0b1220;
-
-  --field-1: #5b8def;
-  --field-2: #3d6fdb;
-  --field-3: #8fb3f7;
-  --field-4: #6fa8c4;
+  /* 8.8:1 on --page, 8.2 on --surface. */
+  --signal: #e0a84b;
 
   --destructive: oklch(0.704 0.191 22.216);
 }
@@ -127,15 +124,4 @@
   outline: 2px solid transparent;
   outline-offset: 4px;
   animation: agent-highlight 1.8s ease-out;
-}
-
-/* The hero's "Scroll" chevron: a slow, small dip. */
-@keyframes scroll-hint {
-  0%,
-  100% {
-    transform: translateY(0);
-  }
-  50% {
-    transform: translateY(5px);
-  }
 }

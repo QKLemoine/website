@@ -1,5 +1,4 @@
 import { AgentProvider } from "@/components/agent/agent-provider";
-import { BackgroundLayer } from "@/components/background/background-layer";
 import { Footer } from "@/components/footer";
 import { Navbar } from "@/components/navbar";
 import { About } from "@/components/sections/about";
@@ -12,7 +11,6 @@ export default function Home() {
   return (
     <AgentProvider>
       <div className="flex flex-1 flex-col">
-        <BackgroundLayer />
         <Navbar />
         <main className="flex-1">
           <Hero />

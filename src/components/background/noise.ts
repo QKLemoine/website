@@ -1,5 +1,5 @@
-// 2D simplex noise (Gustavson's algorithm), used as the stream function whose
-// curl drives the particle flow. Returns values in roughly [-1, 1].
+// 2D simplex noise (Gustavson's algorithm), used as the height field the contour
+// lines trace. Returns values in roughly [-1, 1].
 
 const F2 = 0.5 * (Math.sqrt(3) - 1)
 const G2 = (3 - Math.sqrt(3)) / 6
@@ -8,7 +8,7 @@ const GRAD = [1, 1, -1, 1, 1, -1, -1, -1, 1, 0, -1, 0, 0, 1, 0, -1]
 export type Noise2D = (x: number, y: number) => number
 
 export function createNoise2D(seed = 1): Noise2D {
-  // Seeded shuffle so two noise functions can be decorrelated.
+  // Seeded shuffle, so the same seed always draws the same field.
   const perm = new Uint8Array(512)
   const source = new Uint8Array(256)
   for (let i = 0; i < 256; i++) source[i] = i

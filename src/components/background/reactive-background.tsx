@@ -2,403 +2,458 @@
 
 import { useEffect, useRef } from "react"
 
-import type { BackgroundConfig } from "./config"
-import { onBackgroundEvent } from "./events"
-import { addRipple, createSim, resizeSim, stepSim } from "./flow-simulation"
-import { createRenderer, type Renderer } from "./renderer"
+import { MOTIF_REST_SCALE, type BackgroundConfig } from "./config"
+import { createNoise2D } from "./noise"
 
 const MAX_STEP_SECONDS = 1 / 30
-/** A frame longer than this counts as slow (60fps is 16.7ms). */
-const SLOW_FRAME_MS = 22
-/** Gaps this long are pauses, not slow rendering, and are ignored. */
-const STALL_MS = 250
-const QUALITY_WINDOW_FRAMES = 120
-const ACTIVITY_RIPPLE_SECONDS = 1.2
-/** One flow particle per this many CSS pixels, so phones aren't crowded. */
-const AREA_PER_PARTICLE = 480
+/** Grid the contour height field is sampled on, CSS pixels. */
+const CELL = 12
+const RIPPLE_SPEED = 300
+const RIPPLE_SECONDS = 1.3
+/** Half-width of the ripple's ring, CSS pixels. */
+const RIPPLE_WIDTH = 44
+const MAX_RIPPLES = 4
+/** Furthest a dot is pushed at bend 1, CSS pixels. */
+const DOT_PUSH = 16
 
-/**
- * Quality ladder, walked downward when frames run long: fewer particles, then
- * lower resolution, and finally no trail layer at all.
- */
-const QUALITY = [
-  { particles: 1, maxDpr: Infinity, flow: true },
-  { particles: 0.6, maxDpr: Infinity, flow: true },
-  { particles: 0.35, maxDpr: 1, flow: true },
-  { particles: 0, maxDpr: 1, flow: false },
-] as const
+type Ripple = { x: number; y: number; age: number }
 
-export type BackgroundStats = {
-  fps: number
-  particles: number
-  /** Index into the quality ladder; 0 is full quality. */
-  quality: number
+function rgba(hex: string, alpha: number): string {
+  const value = parseInt(hex.slice(1), 16)
+  return `rgba(${value >> 16}, ${(value >> 8) & 255}, ${value & 255}, ${alpha})`
 }
 
-function isLowPower(): boolean {
-  const nav = navigator as Navigator & {
-    deviceMemory?: number
-    connection?: { saveData?: boolean }
-  }
-  return (
-    nav.hardwareConcurrency <= 4 ||
-    (nav.deviceMemory !== undefined && nav.deviceMemory <= 4) ||
-    nav.connection?.saveData === true
-  )
+/** 1 at the centre, easing to 0 at the radius. */
+function falloff(distance: number, radius: number): number {
+  if (distance >= radius) return 0
+  const t = 1 - (distance * distance) / (radius * radius)
+  return t * t
 }
 
-/** A plain CSS version of the aurora: shown without WebGL and before it starts. */
-function staticGradient(config: BackgroundConfig): string {
-  const [a, b, c, d] = config.palette
-  const alpha = Math.round(config.auroraIntensity * 0.6 * 255)
-    .toString(16)
-    .padStart(2, "0")
-  return [
-    `radial-gradient(60% 50% at 18% 22%, ${a}${alpha}, transparent)`,
-    `radial-gradient(55% 55% at 82% 30%, ${b}${alpha}, transparent)`,
-    `radial-gradient(60% 55% at 70% 85%, ${c}${alpha}, transparent)`,
-    `radial-gradient(45% 45% at 22% 80%, ${d}${alpha}, transparent)`,
-    config.base,
-  ].join(", ")
+/** 1 on the ripple's ring, easing to 0 either side of it. */
+function ring(distance: number, radius: number): number {
+  const t = (distance - radius) / RIPPLE_WIDTH
+  return t > -1 && t < 1 ? (1 - t * t) * (1 - t * t) : 0
 }
 
 /**
- * Decorative animated background in three layers: an aurora of slowly morphing
- * colour, flow-field particles with trails, and clustered nodes joined by
- * lines. It reacts to the cursor, clicks and taps, scrolling and events sent
- * through ./events. Fills its positioned parent and never takes input.
+ * Decorative background for one section: a faint dot grid or a set of contour
+ * lines. It is completely still at rest and only redraws while something is
+ * changing: the pattern bends and brightens near the cursor and ripples on a
+ * click or tap. Fills its positioned parent and never takes input.
  */
 export default function ReactiveBackground({
   config,
   className,
-  getSection,
-  onStats,
+  fadeOnScroll = false,
 }: {
   config: BackgroundConfig
   className?: string
-  /** Fractional index of the page section in view; defaults to viewports scrolled. */
-  getSection?: () => number
-  onStats?: (stats: BackgroundStats) => void
+  /** Fade out as the page scrolls. Assumes the section is at the top of the page. */
+  fadeOnScroll?: boolean
 }) {
   const containerRef = useRef<HTMLDivElement>(null)
   const canvasRef = useRef<HTMLCanvasElement>(null)
-  // Read every frame, so changing colours or strengths restyles the running
-  // field instead of rebuilding it.
+  // Read on every draw, so changing colours or strengths restyles the pattern
+  // without rebuilding it.
   const configRef = useRef(config)
-  const getSectionRef = useRef(getSection)
-  const onStatsRef = useRef(onStats)
   const redrawRef = useRef<(() => void) | null>(null)
 
   useEffect(() => {
     configRef.current = config
-    getSectionRef.current = getSection
-    onStatsRef.current = onStats
     redrawRef.current?.()
-  }, [config, getSection, onStats])
+  }, [config])
 
-  const { particleCount, nodeCount, clusterCount, maxDevicePixelRatio } = config
+  const { maxDevicePixelRatio } = config
 
   useEffect(() => {
     const container = containerRef.current
     const canvas = canvasRef.current
-    if (!container || !canvas) return
+    const ctx = canvas?.getContext("2d")
+    // Without a canvas the section simply sits on the flat page colour.
+    if (!container || !canvas || !ctx) return
 
-    let renderer: Renderer | null = createRenderer(canvas)
-    // Without WebGL the CSS gradient on the container is the whole background.
-    if (!renderer) return
-    canvas.style.opacity = "1"
-
-    // Inner functions are arrows so TypeScript keeps the non-null narrowing above.
-    let quality = isLowPower() ? 1 : 0
-    const deviceDpr = Math.min(
-      window.devicePixelRatio || 1,
-      maxDevicePixelRatio
-    )
-    const width = container.clientWidth || 1
-    const height = container.clientHeight || 1
-    const capacity = Math.max(
-      200,
-      Math.min(particleCount, Math.round((width * height) / AREA_PER_PARTICLE))
-    )
-    const sim = createSim(
-      { particleCount: capacity, nodeCount, clusterCount },
-      width,
-      height
-    )
-
+    const noise = createNoise2D(7)
     const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)")
-    const pointer = { x: width / 2, y: height / 2, active: false }
+    const pointer = { x: 0, y: 0, targetX: 0, targetY: 0, inside: false }
+    const crossings = new Float32Array(8)
+    let ripples: Ripple[] = []
+    let width = 1
+    let height = 1
+    let columns = 1
+    let rows = 1
+    let base = new Float32Array(0)
+    let field = new Float32Array(0)
+    let baseScale = 0
+    /** 0–1: how much the cursor currently affects the pattern. */
+    let influence = 0
+    let opacity = 1
     let frameId = 0
     let lastTime = 0
-    let frameCount = 0
-    let slowFrames = 0
-    let slowWindows = 0
-    let statsFrames = 0
-    let statsStart = 0
-    let onScreen = true
-    let activity = 0
-    let activityTarget = 0
-    let activityOrigin = { x: width / 2, y: height / 2 }
-    let sinceActivityRipple = 0
-    let lastScrollY = window.scrollY
 
-    const currentDpr = () => Math.min(deviceDpr, QUALITY[quality].maxDpr)
-
-    const applyQuality = () => {
-      sim.count = Math.round(sim.capacity * QUALITY[quality].particles)
+    /** The contours' height field at rest; it only changes with size or scale. */
+    const buildBase = (scale: number) => {
+      baseScale = scale
+      columns = Math.ceil(width / CELL)
+      rows = Math.ceil(height / CELL)
+      base = new Float32Array((columns + 1) * (rows + 1))
+      field = new Float32Array(base.length)
+      for (let j = 0; j <= rows; j++) {
+        for (let i = 0; i <= columns; i++) {
+          const x = (i * CELL) / scale
+          const y = (j * CELL) / scale
+          base[j * (columns + 1) + i] =
+            noise(x, y) + 0.35 * noise(x * 2.1 + 17, y * 2.1 + 9)
+        }
+      }
     }
 
-    const resize = () => {
-      const w = container.clientWidth || 1
-      const h = container.clientHeight || 1
-      resizeSim(sim, w, h)
-      renderer?.resize(w, h, currentDpr())
+    const dotsPath = (current: BackgroundConfig) => {
+      const path = new Path2D()
+      const spacing = Math.max(8, current.dotSpacing)
+      const radius = current.dotSize
+      const push = current.bend * DOT_PUSH * influence
+      const ripplePush = current.rippleStrength * DOT_PUSH * 0.5
+      const reach = current.interactionRadius
+      for (let gy = (height % spacing) / 2; gy < height; gy += spacing) {
+        for (let gx = (width % spacing) / 2; gx < width; gx += spacing) {
+          let x = gx
+          let y = gy
+          if (push > 0.01) {
+            const dx = gx - pointer.x
+            const dy = gy - pointer.y
+            const distance = Math.hypot(dx, dy)
+            const amount = push * falloff(distance, reach)
+            if (amount > 0 && distance > 0.001) {
+              x += (dx / distance) * amount
+              y += (dy / distance) * amount
+            }
+          }
+          for (const ripple of ripples) {
+            const dx = gx - ripple.x
+            const dy = gy - ripple.y
+            const distance = Math.hypot(dx, dy)
+            const amount =
+              ripplePush *
+              (1 - ripple.age / RIPPLE_SECONDS) *
+              ring(distance, ripple.age * RIPPLE_SPEED)
+            if (amount > 0 && distance > 0.001) {
+              x += (dx / distance) * amount
+              y += (dy / distance) * amount
+            }
+          }
+          path.moveTo(x + radius, y)
+          path.arc(x, y, radius, 0, Math.PI * 2)
+        }
+      }
+      return path
     }
 
-    const section = () =>
-      getSectionRef.current?.() ??
-      window.scrollY / Math.max(window.innerHeight, 1)
+    const contourPath = (current: BackgroundConfig) => {
+      const scale = Math.max(60, current.contourScale)
+      if (scale !== baseScale) buildBase(scale)
+      // The cursor is a small hill and a ripple a travelling ridge, so the
+      // lines bend around them instead of being pushed.
+      const bump = current.bend * 0.6 * influence
+      const rippleBump = current.rippleStrength * 0.3
+      let heights = base
+      if (bump > 0.005 || ripples.length > 0) {
+        heights = field
+        const reach = current.interactionRadius
+        for (let j = 0; j <= rows; j++) {
+          for (let i = 0; i <= columns; i++) {
+            const index = j * (columns + 1) + i
+            const x = i * CELL
+            const y = j * CELL
+            let value = base[index]
+            if (bump > 0.005) {
+              value +=
+                bump * falloff(Math.hypot(x - pointer.x, y - pointer.y), reach)
+            }
+            for (const ripple of ripples) {
+              value +=
+                rippleBump *
+                (1 - ripple.age / RIPPLE_SECONDS) *
+                ring(
+                  Math.hypot(x - ripple.x, y - ripple.y),
+                  ripple.age * RIPPLE_SPEED
+                )
+            }
+            field[index] = value
+          }
+        }
+      }
 
-    const auroraScroll = () =>
-      (window.scrollY / Math.max(sim.height, 1)) *
-      configRef.current.scrollParallax *
-      6
+      // Marching squares: for every grid cell, join the points where each
+      // contour level crosses its edges.
+      const path = new Path2D()
+      const step = 1 / Math.max(1, current.contourDensity)
+      for (let j = 0; j < rows; j++) {
+        for (let i = 0; i < columns; i++) {
+          const index = j * (columns + 1) + i
+          const topLeft = heights[index]
+          const topRight = heights[index + 1]
+          const bottomLeft = heights[index + columns + 1]
+          const bottomRight = heights[index + columns + 2]
+          const low = Math.min(topLeft, topRight, bottomLeft, bottomRight)
+          const high = Math.max(topLeft, topRight, bottomLeft, bottomRight)
+          const x = i * CELL
+          const y = j * CELL
+          for (
+            let level = Math.ceil(low / step) * step;
+            level < high;
+            level += step
+          ) {
+            let count = 0
+            if (topLeft < level !== topRight < level) {
+              crossings[count++] =
+                x + ((level - topLeft) / (topRight - topLeft)) * CELL
+              crossings[count++] = y
+            }
+            if (topRight < level !== bottomRight < level) {
+              crossings[count++] = x + CELL
+              crossings[count++] =
+                y + ((level - topRight) / (bottomRight - topRight)) * CELL
+            }
+            if (bottomLeft < level !== bottomRight < level) {
+              crossings[count++] =
+                x + ((level - bottomLeft) / (bottomRight - bottomLeft)) * CELL
+              crossings[count++] = y + CELL
+            }
+            if (topLeft < level !== bottomLeft < level) {
+              crossings[count++] = x
+              crossings[count++] =
+                y + ((level - topLeft) / (bottomLeft - topLeft)) * CELL
+            }
+            for (let point = 0; point + 3 < count; point += 4) {
+              path.moveTo(crossings[point], crossings[point + 1])
+              path.lineTo(crossings[point + 2], crossings[point + 3])
+            }
+          }
+        }
+      }
+      return path
+    }
 
-    /** Reduced motion and paused states: the aurora alone, frozen. */
-    const drawStill = () => {
-      sim.section = section()
-      renderer?.render(sim, {
-        config: configRef.current,
-        flow: false,
-        clusters: false,
-        dt: 0,
-        activity: 0,
-        scroll: auroraScroll(),
-      })
+    const draw = () => {
+      const current = configRef.current
+      ctx.clearRect(0, 0, width, height)
+      if (opacity <= 0) return
+
+      const dots = current.motif === "dots"
+      const path = dots ? dotsPath(current) : contourPath(current)
+      const paint = (style: string | CanvasGradient) => {
+        if (dots) {
+          ctx.fillStyle = style
+          ctx.fill(path)
+        } else {
+          ctx.strokeStyle = style
+          ctx.lineWidth = current.lineWidth
+          ctx.stroke(path)
+        }
+      }
+
+      paint(rgba(current.ink, current.restOpacity * MOTIF_REST_SCALE[current.motif]))
+
+      // The same shapes again in the accent colour, through a gradient that is
+      // only opaque near the cursor or on a ripple's ring.
+      if (influence > 0.01) {
+        const glow = ctx.createRadialGradient(
+          pointer.x,
+          pointer.y,
+          0,
+          pointer.x,
+          pointer.y,
+          current.interactionRadius
+        )
+        glow.addColorStop(0, rgba(current.accent, current.highlightOpacity * influence))
+        glow.addColorStop(1, rgba(current.accent, 0))
+        paint(glow)
+      }
+      for (const ripple of ripples) {
+        const radius = ripple.age * RIPPLE_SPEED
+        const strength =
+          current.highlightOpacity *
+          current.rippleStrength *
+          (1 - ripple.age / RIPPLE_SECONDS)
+        const wave = ctx.createRadialGradient(
+          ripple.x,
+          ripple.y,
+          Math.max(0, radius - RIPPLE_WIDTH),
+          ripple.x,
+          ripple.y,
+          radius + RIPPLE_WIDTH
+        )
+        wave.addColorStop(0, rgba(current.accent, 0))
+        wave.addColorStop(0.5, rgba(current.accent, strength))
+        wave.addColorStop(1, rgba(current.accent, 0))
+        paint(wave)
+      }
     }
 
     const frame = (now: number) => {
-      const current = configRef.current
-      // The first frame has no previous timestamp to measure from. (Comparing
-      // against performance.now() instead is wrong: rAF timestamps can be
-      // slightly earlier than it, which would produce a negative step.)
-      const elapsed = lastTime === 0 ? 0 : now - lastTime
+      frameId = 0
+      // The first frame after waking has no previous timestamp to measure from.
+      const dt =
+        lastTime === 0
+          ? 0
+          : Math.min(Math.max(now - lastTime, 0) / 1000, MAX_STEP_SECONDS)
       lastTime = now
-      const dt = Math.min(Math.max(elapsed, 0) / 1000, MAX_STEP_SECONDS)
 
-      activity += (activityTarget - activity) * Math.min(1, dt * 3)
-      if (activityTarget > 0) {
-        sinceActivityRipple += dt
-        if (sinceActivityRipple >= ACTIVITY_RIPPLE_SECONDS) {
-          sinceActivityRipple = 0
-          addRipple(sim, activityOrigin.x, activityOrigin.y, 0.6)
-        }
-      }
+      const target = pointer.inside ? 1 : 0
+      influence += (target - influence) * Math.min(1, dt * 6)
+      const ease = Math.min(1, dt * 14)
+      pointer.x += (pointer.targetX - pointer.x) * ease
+      pointer.y += (pointer.targetY - pointer.y) * ease
+      for (const ripple of ripples) ripple.age += dt
+      ripples = ripples.filter((ripple) => ripple.age < RIPPLE_SECONDS)
 
-      const scrollY = window.scrollY
-      const scrolled = scrollY - lastScrollY
-      lastScrollY = scrollY
+      const settled =
+        dt > 0 &&
+        ripples.length === 0 &&
+        Math.abs(target - influence) < 0.004 &&
+        Math.abs(pointer.targetX - pointer.x) < 0.2 &&
+        Math.abs(pointer.targetY - pointer.y) < 0.2
+      if (settled) influence = target
+      draw()
 
-      stepSim(
-        sim,
-        dt,
-        {
-          flowSpeed: current.flowSpeed,
-          flowScale: current.flowScale,
-          clusterPull: current.clusterPull,
-          interactionStrength: current.interactionStrength,
-          interactionRadius: current.interactionRadius,
-          linkDistance: current.linkDistance,
-        },
-        {
-          pointerX: pointer.x,
-          pointerY: pointer.y,
-          pointerActive: pointer.active,
-          section: section(),
-          // Clamped so a jump to an anchor doesn't fling every particle off screen.
-          parallaxShift:
-            Math.max(-40, Math.min(40, scrolled)) * current.scrollParallax,
-          activity,
-        }
-      )
-      renderer?.render(sim, {
-        config: current,
-        flow: current.layers.flow && QUALITY[quality].flow,
-        clusters: current.layers.clusters,
-        dt,
-        activity,
-        scroll: auroraScroll(),
-      })
-
-      // Adaptive quality, measured from real frame times. A step down needs
-      // most frames to be slow for two windows in a row, so a one-off stall
-      // doesn't cost quality; and it never steps back up, so it can't oscillate.
-      frameCount++
-      if (elapsed > SLOW_FRAME_MS && elapsed < STALL_MS) slowFrames++
-      if (frameCount % QUALITY_WINDOW_FRAMES === 0) {
-        const slowWindow = slowFrames > QUALITY_WINDOW_FRAMES * 0.6
-        slowFrames = 0
-        slowWindows = slowWindow ? slowWindows + 1 : 0
-        if (slowWindows >= 2 && quality < QUALITY.length - 1) {
-          slowWindows = 0
-          quality++
-          applyQuality()
-          resize()
-        }
-      }
-
-      statsFrames++
-      if (now - statsStart >= 1000) {
-        onStatsRef.current?.({
-          fps: Math.round((statsFrames * 1000) / (now - statsStart)),
-          particles: QUALITY[quality].flow ? sim.count : 0,
-          quality,
-        })
-        statsFrames = 0
-        statsStart = now
-      }
-
-      frameId = requestAnimationFrame(frame)
+      // Once nothing is changing the loop stops, leaving the last frame up.
+      if (settled) lastTime = 0
+      else frameId = requestAnimationFrame(frame)
     }
 
-    const start = () => {
-      if (frameId !== 0 || document.hidden || !onScreen || reducedMotion.matches)
-        return
-      lastTime = 0
-      frameCount = 0
-      statsFrames = 0
-      statsStart = performance.now()
-      lastScrollY = window.scrollY
+    const wake = () => {
+      if (frameId !== 0 || document.hidden || reducedMotion.matches) return
+      if (opacity <= 0) return
       frameId = requestAnimationFrame(frame)
     }
 
     const stop = () => {
       cancelAnimationFrame(frameId)
       frameId = 0
+      lastTime = 0
+    }
+
+    /** Drop every reaction and show the plain pattern. */
+    const rest = () => {
+      stop()
+      pointer.inside = false
+      influence = 0
+      ripples = []
+      draw()
+    }
+
+    const resize = () => {
+      width = container.clientWidth || 1
+      height = container.clientHeight || 1
+      const dpr = Math.min(window.devicePixelRatio || 1, maxDevicePixelRatio)
+      canvas.width = Math.round(width * dpr)
+      canvas.height = Math.round(height * dpr)
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0)
+      baseScale = 0
+      if (frameId === 0) draw()
+    }
+
+    const onScroll = () => {
+      if (!fadeOnScroll) return
+      const end = Math.max(1, configRef.current.fadeEnd * height)
+      const next = Math.max(0, 1 - window.scrollY / end)
+      if (next === opacity) return
+      const wasHidden = opacity <= 0
+      opacity = next
+      container.style.opacity = String(opacity)
+      if (opacity <= 0) rest()
+      else if (wasHidden) draw()
+    }
+
+    const track = (event: PointerEvent) => {
+      const rect = container.getBoundingClientRect()
+      pointer.targetX = event.clientX - rect.left
+      pointer.targetY = event.clientY - rect.top
+      const inside =
+        opacity > 0 &&
+        pointer.targetX >= 0 &&
+        pointer.targetX <= rect.width &&
+        pointer.targetY >= 0 &&
+        pointer.targetY <= rect.height
+      // Arriving from outside, the glow starts where the cursor is instead of
+      // sliding over from where it last was.
+      if (inside && influence < 0.01) {
+        pointer.x = pointer.targetX
+        pointer.y = pointer.targetY
+      }
+      pointer.inside = inside
+      return inside
+    }
+
+    // Mouse and pen hover; a finger only counts while it is down.
+    const onPointerMove = (event: PointerEvent) => {
+      if (reducedMotion.matches) return
+      const wasInside = pointer.inside
+      if (track(event) || wasInside) wake()
+    }
+
+    const onPointerDown = (event: PointerEvent) => {
+      if (reducedMotion.matches || !track(event)) return
+      if (configRef.current.rippleStrength > 0) {
+        ripples.push({ x: pointer.targetX, y: pointer.targetY, age: 0 })
+        if (ripples.length > MAX_RIPPLES) ripples.shift()
+      }
+      wake()
+    }
+
+    const onPointerEnd = (event: PointerEvent) => {
+      if (event.pointerType !== "touch") return
+      pointer.inside = false
+      wake()
+    }
+
+    const onPointerGone = () => {
+      pointer.inside = false
+      wake()
     }
 
     const onVisibility = () => {
       if (document.hidden) stop()
-      else start()
+      else wake()
     }
 
-    const onMotionPreference = () => {
-      stop()
-      if (reducedMotion.matches) drawStill()
-      else start()
-    }
-
-    const toLocal = (clientX: number, clientY: number) => {
-      const rect = container.getBoundingClientRect()
-      return { x: clientX - rect.left, y: clientY - rect.top }
-    }
-
-    const track = (event: PointerEvent) => {
-      const local = toLocal(event.clientX, event.clientY)
-      pointer.x = local.x
-      pointer.y = local.y
-      pointer.active = true
-    }
-
-    // Mouse and pen hover; a finger only counts while it is down.
-    const onPointerMove = (event: PointerEvent) => track(event)
-
-    const onPointerDown = (event: PointerEvent) => {
-      if (reducedMotion.matches) return
-      track(event)
-      const local = toLocal(event.clientX, event.clientY)
-      addRipple(sim, local.x, local.y, 1)
-    }
-
-    const onPointerEnd = (event: PointerEvent) => {
-      if (event.pointerType === "touch") pointer.active = false
-    }
-
-    const onPointerGone = () => {
-      pointer.active = false
-    }
-
-    const offBackgroundEvent = onBackgroundEvent((event) => {
-      if (reducedMotion.matches) return
-      const local = toLocal(event.x, event.y)
-      if (event.type === "pulse") {
-        addRipple(sim, local.x, local.y, event.strength ?? 1)
-      } else {
-        activityTarget = event.active ? 1 : 0
-        activityOrigin = local
-        sinceActivityRipple = ACTIVITY_RIPPLE_SECONDS
-      }
-    })
-
-    const resizeObserver = new ResizeObserver(() => {
-      resize()
-      if (frameId === 0) drawStill()
-    })
+    const resizeObserver = new ResizeObserver(resize)
     resizeObserver.observe(container)
 
-    // Nothing to animate while the canvas is scrolled out of view.
-    const intersectionObserver = new IntersectionObserver(([entry]) => {
-      onScreen = entry.isIntersecting
-      if (onScreen) start()
-      else stop()
-    })
-    intersectionObserver.observe(container)
-
-    // A lost GPU context (driver reset, too many tabs) stops drawing; pick up
-    // again with a fresh renderer when the browser restores it.
-    const onContextLost = (event: Event) => {
-      event.preventDefault()
-      stop()
-    }
-    const onContextRestored = () => {
-      renderer = createRenderer(canvas)
-      resize()
-      if (reducedMotion.matches) drawStill()
-      else start()
-    }
-
-    applyQuality()
-    sim.section = section()
     resize()
-    drawStill()
-    start()
+    onScroll()
     redrawRef.current = () => {
-      if (frameId === 0) drawStill()
+      if (frameId === 0) draw()
     }
 
     document.addEventListener("visibilitychange", onVisibility)
-    reducedMotion.addEventListener("change", onMotionPreference)
+    reducedMotion.addEventListener("change", rest)
+    window.addEventListener("scroll", onScroll, { passive: true })
     window.addEventListener("pointermove", onPointerMove, { passive: true })
     window.addEventListener("pointerdown", onPointerDown, { passive: true })
     window.addEventListener("pointerup", onPointerEnd, { passive: true })
     window.addEventListener("pointercancel", onPointerEnd, { passive: true })
     document.documentElement.addEventListener("pointerleave", onPointerGone)
     window.addEventListener("blur", onPointerGone)
-    canvas.addEventListener("webglcontextlost", onContextLost)
-    canvas.addEventListener("webglcontextrestored", onContextRestored)
 
     return () => {
       stop()
       redrawRef.current = null
-      offBackgroundEvent()
       resizeObserver.disconnect()
-      intersectionObserver.disconnect()
       document.removeEventListener("visibilitychange", onVisibility)
-      reducedMotion.removeEventListener("change", onMotionPreference)
+      reducedMotion.removeEventListener("change", rest)
+      window.removeEventListener("scroll", onScroll)
       window.removeEventListener("pointermove", onPointerMove)
       window.removeEventListener("pointerdown", onPointerDown)
       window.removeEventListener("pointerup", onPointerEnd)
       window.removeEventListener("pointercancel", onPointerEnd)
       document.documentElement.removeEventListener("pointerleave", onPointerGone)
       window.removeEventListener("blur", onPointerGone)
-      canvas.removeEventListener("webglcontextlost", onContextLost)
-      canvas.removeEventListener("webglcontextrestored", onContextRestored)
-      renderer?.dispose()
-      canvas.style.opacity = "0"
+      container.style.opacity = ""
     }
-    // Only the values that size the simulation rebuild it; everything else is
-    // read live from configRef.
-  }, [particleCount, nodeCount, clusterCount, maxDevicePixelRatio])
+    // Everything else is read live from configRef.
+  }, [maxDevicePixelRatio, fadeOnScroll])
 
   return (
     <div
@@ -408,15 +463,11 @@ export default function ReactiveBackground({
       style={{
         pointerEvents: "none",
         overflow: "hidden",
-        background: staticGradient(config),
+        // Dissolves into the flat page colour instead of ending on an edge.
+        maskImage: "linear-gradient(to bottom, #000 55%, transparent)",
       }}
     >
-      {/* Hidden until WebGL has drawn, so a device without it keeps the gradient. */}
-      <canvas
-        ref={canvasRef}
-        className="absolute inset-0 size-full"
-        style={{ opacity: 0 }}
-      />
+      <canvas ref={canvasRef} className="absolute inset-0 size-full" />
     </div>
   )
 }

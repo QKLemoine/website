@@ -1,23 +1,19 @@
 "use client"
 
 // Temporary tuning tool for the background. Delete this file and
-// src/app/bg-playground once the chosen values are baked into config.ts.
+// src/app/bg-playground once the chosen motif and values are baked into
+// config.ts.
 
 import { useTheme } from "next-themes"
 import { useState, useSyncExternalStore } from "react"
 
-import { BackgroundLayer, useBackgroundColors } from "./background-layer"
+import { BackgroundLayer } from "./background-layer"
 import {
   darkBackgroundSettings,
   lightBackgroundSettings,
-  type BackgroundColors,
-  type BackgroundLayers,
+  type BackgroundMotif,
   type BackgroundSettings,
 } from "./config"
-import { emitBackgroundEvent } from "./events"
-import type { BackgroundStats } from "./reactive-background"
-
-const QUALITY_NAMES = ["full", "fewer particles", "low resolution", "no trails"]
 
 type NumericKey = {
   [K in keyof BackgroundSettings]: BackgroundSettings[K] extends number
@@ -35,61 +31,37 @@ type Slider = {
 
 const GROUPS: { title: string; sliders: Slider[] }[] = [
   {
-    title: "Aurora",
+    title: "Both",
     sliders: [
-      { key: "auroraIntensity", label: "Intensity", min: 0, max: 0.8, step: 0.01 },
-      { key: "auroraScale", label: "Blob detail", min: 0.5, max: 4, step: 0.05 },
-      { key: "auroraSpeed", label: "Morph speed", min: 0, max: 4, step: 0.05 },
-    ],
-  },
-  {
-    title: "Flow particles",
-    sliders: [
-      { key: "particleCount", label: "Count (max)", min: 200, max: 6000, step: 100 },
-      { key: "particleSize", label: "Size", min: 0.5, max: 5, step: 0.1 },
-      { key: "particleOpacity", label: "Opacity", min: 0, max: 1, step: 0.01 },
-      { key: "trailLength", label: "Trail length (s)", min: 0.05, max: 4, step: 0.05 },
-      { key: "flowSpeed", label: "Flow speed", min: 0, max: 160, step: 1 },
-      { key: "flowScale", label: "Swirl tightness", min: 0.2, max: 4, step: 0.05 },
-    ],
-  },
-  {
-    title: "Clusters",
-    sliders: [
-      { key: "clusterCount", label: "Clusters", min: 1, max: 10, step: 1 },
-      { key: "clusterPull", label: "Gathering", min: 0, max: 0.6, step: 0.01 },
-      { key: "nodeCount", label: "Nodes", min: 0, max: 260, step: 5 },
-      { key: "nodeOpacity", label: "Node opacity", min: 0, max: 1, step: 0.01 },
-      { key: "linkDistance", label: "Link distance", min: 20, max: 220, step: 2 },
-      { key: "lineOpacity", label: "Line opacity", min: 0, max: 1, step: 0.01 },
-    ],
-  },
-  {
-    title: "Interaction",
-    sliders: [
-      { key: "interactionStrength", label: "Cursor vortex", min: 0, max: 3, step: 0.05 },
-      { key: "interactionRadius", label: "Cursor reach", min: 40, max: 500, step: 5 },
+      { key: "restOpacity", label: "Opacity at rest", min: 0, max: 0.8, step: 0.01 },
+      { key: "highlightOpacity", label: "Accent near cursor", min: 0, max: 1, step: 0.01 },
+      { key: "interactionRadius", label: "Cursor reach", min: 40, max: 400, step: 5 },
+      { key: "bend", label: "Bend", min: 0, max: 1, step: 0.01 },
       { key: "rippleStrength", label: "Click ripple", min: 0, max: 1, step: 0.01 },
-      { key: "scrollParallax", label: "Scroll parallax", min: 0, max: 0.3, step: 0.005 },
+      { key: "fadeEnd", label: "Faded out by (scroll)", min: 0.2, max: 1, step: 0.05 },
     ],
   },
   {
-    title: "Legibility and performance",
+    title: "Dot grid",
     sliders: [
-      { key: "contentWidth", label: "Text column width", min: 0, max: 1600, step: 16 },
-      { key: "contentDim", label: "Calm behind text", min: 0, max: 1, step: 0.01 },
-      { key: "maxDevicePixelRatio", label: "Resolution cap", min: 1, max: 2, step: 0.25 },
+      { key: "dotSpacing", label: "Spacing", min: 12, max: 64, step: 1 },
+      { key: "dotSize", label: "Dot size", min: 0.5, max: 2.5, step: 0.1 },
+    ],
+  },
+  {
+    title: "Contours",
+    sliders: [
+      { key: "contourScale", label: "Hill size", min: 120, max: 900, step: 10 },
+      { key: "contourDensity", label: "Line density", min: 2, max: 16, step: 1 },
+      { key: "lineWidth", label: "Line width", min: 0.5, max: 2, step: 0.1 },
     ],
   },
 ]
 
-const LAYERS: { key: keyof BackgroundLayers; label: string }[] = [
-  { key: "aurora", label: "Aurora" },
-  { key: "flow", label: "Flow particles" },
-  { key: "clusters", label: "Clusters" },
+const MOTIFS: { motif: BackgroundMotif; name: string }[] = [
+  { motif: "dots", name: "Dot grid" },
+  { motif: "contours", name: "Contour lines" },
 ]
-
-const SECTIONS = ["Hero", "Projects", "About", "Experience", "Contact"]
 
 const noopSubscribe = () => () => {}
 
@@ -103,84 +75,63 @@ export function BackgroundPlayground() {
   )
   const [light, setLight] = useState(lightBackgroundSettings)
   const [dark, setDark] = useState(darkBackgroundSettings)
-  // Colours start from the theme tokens; a picker edit overrides them for
-  // that theme until reset.
-  const tokenColors = useBackgroundColors()
-  const [lightColors, setLightColors] = useState<BackgroundColors | null>(null)
-  const [darkColors, setDarkColors] = useState<BackgroundColors | null>(null)
   const [collapsed, setCollapsed] = useState(false)
   const [copied, setCopied] = useState(false)
-  const [stats, setStats] = useState<BackgroundStats | null>(null)
 
   const isDark = resolvedTheme === "dark"
   const config = isDark ? dark : light
   const update = (patch: Partial<BackgroundSettings>) =>
     (isDark ? setDark : setLight)((current) => ({ ...current, ...patch }))
-  const override = isDark ? darkColors : lightColors
-  const colors = override ?? tokenColors
-  const updateColors = (next: BackgroundColors) =>
-    (isDark ? setDarkColors : setLightColors)(next)
 
+  // The motif is the choice being made here, so it is left out of the export.
   const exported = JSON.stringify(
-    {
-      [isDark ? "dark" : "light"]: { ...config, colors },
-      [isDark ? "light" : "dark"]: {
-        ...(isDark ? light : dark),
-        colors: (isDark ? lightColors : darkColors) ?? "unchanged (theme tokens)",
-      },
-    },
+    { light: { ...light, motif: undefined }, dark: { ...dark, motif: undefined } },
     null,
     2
   )
 
-  const simulateStreaming = () => {
-    const origin = { x: window.innerWidth - 240, y: window.innerHeight - 300 }
-    emitBackgroundEvent({ type: "activity", active: true, ...origin })
-    window.setTimeout(
-      () => emitBackgroundEvent({ type: "activity", active: false, ...origin }),
-      4000
-    )
-  }
-
   return (
     <div className="flex flex-1 flex-col">
-      <BackgroundLayer
-        light={light}
-        dark={dark}
-        colors={override ?? undefined}
-        onStats={setStats}
-      />
-
-      {/* Sample page content, to judge legibility and the per-section shift. */}
-      <main>
-        {SECTIONS.map((name, index) => (
+      {/* The same hero-sized sample twice, one per motif. */}
+      <main className="grid flex-1 grid-cols-1 md:grid-cols-2">
+        {MOTIFS.map(({ motif, name }) => (
           <section
-            key={name}
-            className="mx-auto flex min-h-screen max-w-5xl flex-col justify-center gap-5 px-6 py-20"
+            key={motif}
+            className="relative isolate flex min-h-[calc(100svh-3rem)] flex-col justify-center gap-5 border-border px-6 py-16 md:px-10 md:not-last:border-r"
           >
+            <BackgroundLayer
+              light={{ ...light, motif }}
+              dark={{ ...dark, motif }}
+              fadeOnScroll
+            />
             <p className="text-sm font-semibold tracking-widest text-muted-foreground uppercase">
-              Section {index + 1} · {name}
+              {name}
             </p>
-            <h2 className="max-w-2xl text-4xl font-semibold tracking-tight">
-              Sample heading over the background
+            <h2 className="max-w-md text-4xl font-semibold tracking-tight text-balance">
+              A <span className="text-primary">sample</span> headline over the
+              background
             </h2>
-            <p className="max-w-2xl text-base leading-relaxed text-foreground/90">
-              Body text sits directly on the background, like the About section
-              of the site. Move the cursor, click, and scroll between sections
-              while reading this to check that it stays comfortable.
+            <p className="max-w-md text-base leading-relaxed text-foreground/90">
+              Leave the cursor still: this should read as a calm, well-typeset
+              page. Then move across it and click to see the pattern bend,
+              brighten and ripple.
             </p>
-            <p className="max-w-2xl text-sm text-muted-foreground">
+            <p className="max-w-md text-sm text-muted-foreground">
               Muted secondary text is the hardest case for contrast, so check
-              this line in the busiest parts of the field.
+              this line too.
             </p>
-            <div className="max-w-md rounded-xl bg-card p-4 text-sm ring-1 ring-foreground/10">
+            <div className="max-w-xs rounded-xl bg-card p-4 text-sm ring-1 ring-foreground/10">
               Cards are opaque, so text inside them is never affected.
             </div>
           </section>
         ))}
       </main>
+      {/* Room to scroll, to check the fade into the flat page colour. */}
+      <div className="flex h-[80svh] items-center justify-center text-sm text-muted-foreground">
+        Below the hero the page is flat.
+      </div>
 
-      <aside className="fixed top-3 right-3 z-50 flex max-h-[calc(100dvh-1.5rem)] w-80 flex-col rounded-xl bg-card/95 text-sm shadow-xl ring-1 ring-foreground/10 backdrop-blur">
+      <aside className="fixed right-3 bottom-3 z-50 flex max-h-[calc(100dvh-1.5rem)] w-72 flex-col rounded-xl bg-card/95 text-sm shadow-xl ring-1 ring-foreground/10 backdrop-blur">
         <header className="flex items-center justify-between gap-2 border-b border-border px-3 py-2">
           <h1 className="font-semibold">Background playground</h1>
           <button
@@ -194,84 +145,20 @@ export function BackgroundPlayground() {
 
         {ready && !collapsed && (
           <div className="flex min-h-0 flex-col gap-4 overflow-y-auto p-3">
-            <p className="text-xs text-muted-foreground tabular-nums" aria-live="off">
-              {stats
-                ? `${stats.fps} fps · ${stats.particles} particles · quality: ${QUALITY_NAMES[stats.quality]}`
-                : "measuring…"}
-            </p>
             <div className="flex flex-wrap gap-2">
               <PanelButton onClick={() => setTheme(isDark ? "light" : "dark")}>
                 Editing: {isDark ? "dark" : "light"} theme (switch)
               </PanelButton>
-              <PanelButton onClick={simulateStreaming}>
-                Simulate agent streaming
-              </PanelButton>
               <PanelButton
-                onClick={() => {
-                  if (isDark) {
-                    setDark(darkBackgroundSettings)
-                    setDarkColors(null)
-                  } else {
-                    setLight(lightBackgroundSettings)
-                    setLightColors(null)
-                  }
-                }}
+                onClick={() =>
+                  isDark
+                    ? setDark(darkBackgroundSettings)
+                    : setLight(lightBackgroundSettings)
+                }
               >
                 Reset this theme
               </PanelButton>
             </div>
-
-            <Group title="Layers">
-              {LAYERS.map((layer) => (
-                <label key={layer.key} className="flex items-center gap-2">
-                  <input
-                    type="checkbox"
-                    checked={config.layers[layer.key]}
-                    onChange={(event) =>
-                      update({
-                        layers: {
-                          ...config.layers,
-                          [layer.key]: event.target.checked,
-                        },
-                      })
-                    }
-                  />
-                  {layer.label}
-                </label>
-              ))}
-            </Group>
-
-            <Group title="Colours">
-              <ColorField
-                label="Base"
-                value={colors.base}
-                onChange={(base) => updateColors({ ...colors, base })}
-              />
-              {colors.palette.map((color, index) => (
-                <ColorField
-                  key={index}
-                  label={`Hue ${index + 1}`}
-                  value={color}
-                  onChange={(next) => {
-                    const palette: BackgroundColors["palette"] = [
-                      ...colors.palette,
-                    ]
-                    palette[index] = next
-                    updateColors({ ...colors, palette })
-                  }}
-                />
-              ))}
-              <label className="flex items-center gap-2">
-                <input
-                  type="checkbox"
-                  checked={config.additive}
-                  onChange={(event) =>
-                    update({ additive: event.target.checked })
-                  }
-                />
-                Additive (glow) blending
-              </label>
-            </Group>
 
             {GROUPS.map((group) => (
               <Group key={group.title} title={group.title}>
@@ -356,30 +243,5 @@ function PanelButton({
     >
       {children}
     </button>
-  )
-}
-
-function ColorField({
-  label,
-  value,
-  onChange,
-}: {
-  label: string
-  value: string
-  onChange: (value: string) => void
-}) {
-  return (
-    <label className="flex items-center justify-between gap-2">
-      <span>{label}</span>
-      <span className="flex items-center gap-2">
-        <span className="font-mono text-xs text-muted-foreground">{value}</span>
-        <input
-          type="color"
-          value={value}
-          onChange={(event) => onChange(event.target.value)}
-          className="h-7 w-10 cursor-pointer rounded border border-border bg-transparent"
-        />
-      </span>
-    </label>
   )
 }
