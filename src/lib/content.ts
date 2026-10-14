@@ -241,15 +241,16 @@ export const projects: Project[] = [
   },
   {
     title: "FRC Competition Robots",
-    image: "/projects/encore-blue.webp",
-    imageAlt: "Line drawing of the robot Encore.",
+    video: "/projects/frc-robot-demo.mp4",
+    image: "/projects/frc-robot-demo.jpg",
+    // TODO: confirm which robot the video shows; the drawing beside it is Encore.
     secondImage: {
-      src: "/projects/carbon.webp",
-      caption: "Carbon, the other.",
+      src: "/projects/encore-blue.webp",
+      caption: "Encore, one of the two competition robots I helped build.",
     },
     drawing: true,
-    // TODO: a video of one of the robots running, when there is one.
-    figureCaption: "Encore, one of the two competition robots I helped build.",
+    // Also available: /projects/carbon.webp, the line drawing of Carbon.
+    figureCaption: "Team 1414's robot driving on the practice field.",
     figureBrief:
       "Video of the robot in a match or driving autonomously, or photos of parts you machined.",
     summary:

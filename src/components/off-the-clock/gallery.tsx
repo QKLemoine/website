@@ -58,8 +58,13 @@ export function Gallery({
 
   const preview = PREVIEWS[layout % PREVIEWS.length]
   const shown = strip ? photos : photos.slice(0, 3)
-  // The photo given the wide slot in the opened collage also rotates.
-  const wide = layout % photos.length
+  // The collages need three photos; one or two simply fill the frame.
+  const grid =
+    shown.length === 1
+      ? "grid-cols-1 grid-rows-1"
+      : shown.length === 2
+        ? "grid-cols-1 grid-rows-2"
+        : preview.grid
 
   let trigger: ReactNode
   if (strip) {
@@ -77,14 +82,13 @@ export function Gallery({
     )
   } else {
     trigger = (
-      <span className={cn("grid aspect-4/3 gap-1", preview.grid)}>
+      <span className={cn("grid aspect-4/3 gap-1", grid)}>
         {shown.map((photo, index) => (
           <span
             key={photo.src}
             className={cn(
               "group/cell relative block overflow-hidden rounded-sm",
-              // With fewer than three photos the grid would have holes.
-              shown.length < 3 ? "col-span-full" : preview.cells[index]
+              shown.length === 3 && preview.cells[index]
             )}
           >
             <PhotoFill photo={photo} sizes="(min-width: 1024px) 260px, 50vw" />
@@ -134,17 +138,20 @@ export function Gallery({
               <X aria-hidden className="size-5" />
             </button>
           </div>
-          <div className="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
-            {photos.map((photo, index) => (
-              <figure
-                key={photo.src}
-                className={cn(index === wide && "sm:col-span-2")}
-              >
+          {/* Columns rather than a grid, so every photo shows whole at its
+              own shape instead of being cropped to a shared one. */}
+          <div
+            className={cn(
+              "mt-3 gap-3",
+              photos.length > 1 && "sm:columns-2",
+              photos.length > 2 && "lg:columns-3"
+            )}
+          >
+            {photos.map((photo) => (
+              <figure key={photo.src} className="mb-3 break-inside-avoid">
                 <div
-                  className={cn(
-                    "relative overflow-hidden rounded-md",
-                    index === wide ? "aspect-4/3 sm:aspect-[8/3]" : "aspect-4/3"
-                  )}
+                  className="relative overflow-hidden rounded-md"
+                  style={{ aspectRatio: photo.aspect }}
                 >
                   <PhotoFill
                     photo={photo}

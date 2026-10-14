@@ -4,14 +4,11 @@ title: Skiing
 order: 3
 # Photos: 3 to 6. The first three show on the card; all of them open on click.
 photos:
-  - src: /off-the-clock/skiing/skiing-1.jpg
-    caption: "TODO: caption"
-  - src: /off-the-clock/skiing/skiing-2.jpg
-    caption: "TODO: caption"
-  - src: /off-the-clock/skiing/skiing-3.jpg
-    caption: "TODO: caption"
-  - src: /off-the-clock/skiing/skiing-4.jpg
-    caption: "TODO: caption"
+  - src: /off-the-clock/Skiing/SkiPano.jpg
+    caption: "Sunrise over a sea of clouds from the top of a run."
+  - src: /off-the-clock/Skiing/SkiWithDad.jpg
+    caption: "With my dad on a snowy day on the mountain."
+  # TODO: one to four more photos in photos/Skiing/.
 ---
 
 - TODO: where you learned

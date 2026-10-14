@@ -47,6 +47,7 @@ yarn-error.log*
 !/photos/.gitkeep
 # raw recordings; the site serves the converted .mp4 files next to them
 /public/projects/*.mov
+/public/projects/*.MOV
 /public/projects/*.gif
 
 # vercel

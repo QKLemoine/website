@@ -25,6 +25,8 @@ export type Photo = {
   caption: string
   /** True until `npm run photos` has published the file; shown as a placeholder. */
   missing: boolean
+  /** Width over height of the published file; 4:3 for a placeholder. */
+  aspect: number
 }
 
 function toPhotos(value: unknown): Photo[] {
@@ -33,11 +35,15 @@ function toPhotos(value: unknown): Photo[] {
     .filter((item): item is { src: string; caption?: string } =>
       Boolean(item && typeof item.src === "string")
     )
-    .map((item) => ({
-      src: item.src,
-      caption: item.caption ?? "",
-      missing: !(item.src in published),
-    }))
+    .map((item) => {
+      const size = published[item.src]
+      return {
+        src: item.src,
+        caption: item.caption ?? "",
+        missing: !size,
+        aspect: size ? size.width / size.height : 4 / 3,
+      }
+    })
 }
 
 // --- Travel -----------------------------------------------------------------

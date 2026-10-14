@@ -1,1 +1,14 @@
-{}
+{
+  "/off-the-clock/F1/F1QL.jpg": {
+    "width": 640,
+    "height": 640
+  },
+  "/off-the-clock/Skiing/SkiPano.jpg": {
+    "width": 1086,
+    "height": 1448
+  },
+  "/off-the-clock/Skiing/SkiWithDad.jpg": {
+    "width": 1800,
+    "height": 1350
+  }
+}
