@@ -58,12 +58,13 @@ export function Gallery({
 
   const preview = PREVIEWS[layout % PREVIEWS.length]
   const shown = strip ? photos : photos.slice(0, 3)
-  // The collages need three photos; one or two simply fill the frame.
+  // The collages need three photos; one fills the frame, and two stand
+  // side by side as tall halves, which suits phone photos better than wide strips.
   const grid =
     shown.length === 1
       ? "grid-cols-1 grid-rows-1"
       : shown.length === 2
-        ? "grid-cols-1 grid-rows-2"
+        ? "grid-cols-2 grid-rows-1"
         : preview.grid
 
   let trigger: ReactNode

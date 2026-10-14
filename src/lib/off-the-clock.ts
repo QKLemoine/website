@@ -27,12 +27,17 @@ export type Photo = {
   missing: boolean
   /** Width over height of the published file; 4:3 for a placeholder. */
   aspect: number
+  /**
+   * Which part stays in view when a frame crops the photo, as a CSS
+   * object-position such as "75% 50%". Centre when not given.
+   */
+  position?: string
 }
 
 function toPhotos(value: unknown): Photo[] {
   if (!Array.isArray(value)) return []
   return value
-    .filter((item): item is { src: string; caption?: string } =>
+    .filter((item): item is { src: string; caption?: string; position?: string } =>
       Boolean(item && typeof item.src === "string")
     )
     .map((item) => {
@@ -42,6 +47,7 @@ function toPhotos(value: unknown): Photo[] {
         caption: item.caption ?? "",
         missing: !size,
         aspect: size ? size.width / size.height : 4 / 3,
+        ...(typeof item.position === "string" ? { position: item.position } : {}),
       }
     })
 }

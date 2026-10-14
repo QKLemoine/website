@@ -35,6 +35,7 @@ export function PhotoFill({
       alt={photo.caption}
       fill
       sizes={sizes}
+      style={photo.position ? { objectPosition: photo.position } : undefined}
       className={cn("object-cover", className)}
     />
   )

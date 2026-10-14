@@ -8,6 +8,8 @@ photos:
     caption: "Sunrise over a sea of clouds from the top of a run."
   - src: /off-the-clock/Skiing/SkiWithDad.jpg
     caption: "With my dad on a snowy day on the mountain."
+    # Keeps both of us in view when the card crops it to a tall frame.
+    position: "78% 50%"
   # TODO: one to four more photos in photos/Skiing/.
 ---
 
