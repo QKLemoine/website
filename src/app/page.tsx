@@ -1,62 +1,18 @@
 import { AgentProvider } from "@/components/agent/agent-provider";
 import { Footer } from "@/components/footer";
+import { archivo, stix } from "@/components/home/fonts";
+import { HOME_WIDTH, Home as HomeContent } from "@/components/home/home";
 import { Navbar } from "@/components/navbar";
-import { BENTO_WIDTH, BentoVariant } from "@/components/variants/bento";
-import {
-  COMBINED_WIDTH,
-  CombinedVariant,
-} from "@/components/variants/combined";
-import { CURRENT_WIDTH, CurrentVariant } from "@/components/variants/current";
-import {
-  EDITORIAL_WIDTH,
-  EditorialVariant,
-} from "@/components/variants/editorial";
-import { archivo, stix } from "@/components/variants/fonts";
-import {
-  NOTEBOOK_WIDTH,
-  NotebookVariant,
-} from "@/components/variants/notebook";
-import { StyleSwitcher } from "@/components/variants/style-switcher";
-import { parseStyle, type StyleId } from "@/components/variants/styles";
 
-// Temporary: the homepage in each style under comparison, chosen with
-// `?style=`. `fonts` is the class that loads a style's extra typeface.
-const VARIANTS: Record<
-  StyleId,
-  { Component: () => React.ReactNode; width: string; fonts?: string }
-> = {
-  current: { Component: CurrentVariant, width: CURRENT_WIDTH },
-  bento: { Component: BentoVariant, width: BENTO_WIDTH },
-  notebook: {
-    Component: NotebookVariant,
-    width: NOTEBOOK_WIDTH,
-    fonts: stix.variable,
-  },
-  editorial: {
-    Component: EditorialVariant,
-    width: EDITORIAL_WIDTH,
-    fonts: archivo.variable,
-  },
-  combined: {
-    Component: CombinedVariant,
-    width: COMBINED_WIDTH,
-    fonts: `${stix.variable} ${archivo.variable}`,
-  },
-};
-
-export default async function Home({ searchParams }: PageProps<"/">) {
-  const style = parseStyle((await searchParams).style);
-  const { Component, width, fonts } = VARIANTS[style];
-
+export default function Home() {
   return (
     <AgentProvider>
-      <div className={`flex flex-1 flex-col ${fonts ?? ""}`}>
-        <Navbar width={width} />
+      <div className={`flex flex-1 flex-col ${stix.variable} ${archivo.variable}`}>
+        <Navbar width={HOME_WIDTH} />
         <main className="flex-1">
-          <Component />
+          <HomeContent />
         </main>
-        <Footer width={width} />
-        <StyleSwitcher current={style} />
+        <Footer width={HOME_WIDTH} />
       </div>
     </AgentProvider>
   );

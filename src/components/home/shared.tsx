@@ -120,7 +120,7 @@ export function ProjectVisual({
 /**
  * A project's figures with their captions: one, or two side by side when it
  * has a second clip. `label` renders the "Fig. 2" / "Fig. 5a" tag in the
- * variant's own type style.
+ * caller's own type style.
  */
 export function ProjectFigures({
   project,

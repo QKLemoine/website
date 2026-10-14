@@ -1,14 +1,9 @@
 import { ArrowUpRight } from "lucide-react"
-import Image from "next/image"
 import type { ReactNode } from "react"
 
-import { AskPrompt } from "@/components/agent/ask-triggers"
-import { BackgroundLayer } from "@/components/background/background-layer"
 import { OffTheClock } from "@/components/off-the-clock/off-the-clock"
 import {
   about,
-  askExamples,
-  education,
   experience,
   highlights,
   profile,
@@ -25,8 +20,6 @@ import {
   projectId,
   socials,
 } from "./shared"
-
-export const EDITORIAL_WIDTH = "max-w-6xl"
 
 const SMALL_CAPS = "[font-variant-caps:all-small-caps] tracking-[0.08em]"
 const DISPLAY = "font-display font-bold tracking-tight [font-stretch:75%]"
@@ -165,7 +158,7 @@ function ProjectEntry({
 }
 
 /** Everything under the masthead: the numbered sections. */
-export function EditorialSections() {
+export function HomeSections() {
   const layouts: EntryLayout[] = projects.map((project, index) =>
     index === 0 ? "lead" : hasPair(project) ? "pair" : "half"
   )
@@ -270,86 +263,5 @@ export function EditorialSections() {
         </ul>
       </Section>
     </>
-  )
-}
-
-/**
- * Editorial: a condensed display face at full confidence, a twelve-column
- * grid with a numbered rail, hairline rules, and the accent as a highlighter.
- */
-export function EditorialVariant() {
-  return (
-    <div className={`mx-auto ${EDITORIAL_WIDTH} px-6`}>
-      <section id="top" className="relative isolate pt-6 pb-10 lg:pt-8">
-        <div className="absolute inset-0 -z-10 opacity-80">
-          <BackgroundLayer fadeOnScroll />
-        </div>
-        <p
-          className={cn(
-            SMALL_CAPS,
-            "flex flex-wrap justify-between gap-x-6 border-b border-foreground pb-2 text-sm"
-          )}
-        >
-          <span>
-            {profile.name}, {profile.location}
-          </span>
-          <span className="text-muted-foreground">
-            {education.school}, {education.threads.join(" and ")}
-          </span>
-        </p>
-        <div className="mt-6 grid gap-x-8 gap-y-6 lg:grid-cols-12">
-          <h1
-            className={cn(
-              DISPLAY,
-              "text-[clamp(3.25rem,10.5vw,8.25rem)] leading-[0.88] text-balance lg:col-span-9"
-            )}
-          >
-            {profile.title}
-          </h1>
-          <figure className="hidden lg:col-span-3 lg:block lg:self-end">
-            <div className="relative aspect-4/5 overflow-hidden">
-              <Image
-                src="/headshot.jpg"
-                alt={profile.name}
-                fill
-                sizes="260px"
-                className="object-cover object-[50%_20%]"
-                preload
-              />
-            </div>
-          </figure>
-        </div>
-        <div className="mt-8 grid gap-x-8 gap-y-6 border-t border-border pt-5 lg:grid-cols-12">
-          <div className="flex items-start gap-4 lg:col-span-5">
-            <p className="text-xl leading-snug text-pretty">{profile.pitch}</p>
-            {/* On narrow screens the portrait moves down beside the pitch. */}
-            <div className="relative aspect-4/5 w-24 shrink-0 overflow-hidden lg:hidden">
-              <Image
-                src="/headshot.jpg"
-                alt={profile.name}
-                fill
-                sizes="96px"
-                className="object-cover object-[50%_20%]"
-              />
-            </div>
-          </div>
-          <div className="lg:col-span-3">
-            <h2 className={cn(SMALL_CAPS, "text-sm text-signal")}>Currently</h2>
-            <p className="mt-1 text-sm leading-relaxed">{profile.currently}</p>
-          </div>
-          <div className="lg:col-span-4">
-            <h2 className={cn(SMALL_CAPS, "text-sm text-muted-foreground")}>
-              Ask about my work
-            </h2>
-            <AskPrompt
-              examples={askExamples}
-              className="mt-1.5 max-w-none rounded-none"
-            />
-          </div>
-        </div>
-      </section>
-
-      <EditorialSections />
-    </div>
   )
 }

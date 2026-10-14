@@ -10,7 +10,7 @@
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
   --font-heading: var(--font-sans);
-  /* Loaded only by the style variants that use them. */
+  /* Loaded by the home page only. */
   --font-serif: var(--font-stix), Georgia, serif;
   --font-display: var(--font-archivo), var(--font-geist-sans), sans-serif;
   --color-ring: var(--ring);
