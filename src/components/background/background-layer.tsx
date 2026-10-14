@@ -8,6 +8,7 @@ import {
   darkBackgroundSettings,
   lightBackgroundSettings,
   type BackgroundColors,
+  type BackgroundMotif,
   type BackgroundSettings,
 } from "./config"
 
@@ -57,16 +58,22 @@ function useBackgroundColors(): BackgroundColors {
 export function BackgroundLayer({
   light = lightBackgroundSettings,
   dark = darkBackgroundSettings,
+  motif,
   fadeOnScroll = false,
 }: {
   light?: BackgroundSettings
   dark?: BackgroundSettings
+  /** Overrides the motif set in config.ts. */
+  motif?: BackgroundMotif
   fadeOnScroll?: boolean
 }) {
   const { resolvedTheme } = useTheme()
   const colors = useBackgroundColors()
   const settings = resolvedTheme === "dark" ? dark : light
-  const config = useMemo(() => ({ ...settings, ...colors }), [settings, colors])
+  const config = useMemo(
+    () => ({ ...settings, ...colors, motif: motif ?? settings.motif }),
+    [settings, colors, motif]
+  )
 
   return (
     <ReactiveBackground

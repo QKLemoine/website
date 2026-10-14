@@ -5,6 +5,7 @@ import { MessageCircle, Search } from "lucide-react"
 import { useEffect, useState } from "react"
 
 import { Button } from "@/components/ui/button"
+import { cn } from "@/lib/utils"
 
 import { useAgent, useShortcutLabel } from "./agent-provider"
 
@@ -68,7 +69,13 @@ function useCycle(count: number): number {
  * A search-input-shaped button for the hero: it reads as an invitation to
  * type, with example questions fading through as its placeholder.
  */
-export function AskPrompt({ examples = [] }: { examples?: string[] }) {
+export function AskPrompt({
+  examples = [],
+  className,
+}: {
+  examples?: string[]
+  className?: string
+}) {
   const { open, setOpen, preload } = useAgent()
   const shortcut = useShortcutLabel()
   const index = useCycle(examples.length)
@@ -83,7 +90,10 @@ export function AskPrompt({ examples = [] }: { examples?: string[] }) {
       onClick={() => setOpen(true)}
       onPointerEnter={preload}
       onFocus={preload}
-      className="flex h-11 w-full max-w-md items-center gap-2.5 rounded-lg border border-border bg-card px-3.5 text-left text-sm text-muted-foreground outline-none transition-colors hover:border-ring focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/30"
+      className={cn(
+        "flex h-11 w-full max-w-md items-center gap-2.5 rounded-lg border border-border bg-card px-3.5 text-left text-sm text-muted-foreground outline-none transition-colors hover:border-ring focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/30",
+        className
+      )}
     >
       <Search aria-hidden className="size-4 shrink-0" />
       <AnimatePresence mode="wait" initial={false}>

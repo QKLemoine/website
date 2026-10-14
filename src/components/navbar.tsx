@@ -19,20 +19,23 @@ const links = [
   { href: "#projects", label: "Projects" },
   { href: "#about", label: "About" },
   { href: "#experience", label: "Experience" },
+  { href: "#off-the-clock", label: "Off the clock" },
   { href: "#contact", label: "Contact" },
 ]
 
-export function Navbar() {
+export function Navbar({ width = "max-w-5xl" }: { width?: string }) {
   const [open, setOpen] = useState(false)
 
   return (
     <header className="sticky top-0 z-40 w-full border-b border-border/60 bg-background/85 backdrop-blur supports-backdrop-filter:bg-background/60">
-      <div className="mx-auto flex h-14 max-w-5xl items-center justify-between px-6">
+      <div
+        className={`mx-auto flex h-14 ${width} items-center justify-between px-6`}
+      >
         <a href="#top" className="text-base font-semibold tracking-tight">
           {profile.name}
         </a>
 
-        <nav className="hidden items-center gap-8 text-base text-muted-foreground sm:flex">
+        <nav className="hidden items-center gap-6 text-base text-muted-foreground md:flex lg:gap-8">
           {links.map((link) => (
             <a
               key={link.href}
@@ -44,12 +47,12 @@ export function Navbar() {
           ))}
         </nav>
 
-        <div className="hidden items-center gap-2 sm:flex">
+        <div className="hidden items-center gap-2 md:flex">
           <AskButton />
           <ThemeToggle />
         </div>
 
-        <div className="flex items-center gap-1 sm:hidden">
+        <div className="flex items-center gap-1 md:hidden">
           <ThemeToggle />
           <Sheet open={open} onOpenChange={setOpen}>
             <SheetContent side="right">

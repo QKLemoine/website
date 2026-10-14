@@ -38,6 +38,17 @@ yarn-error.log*
 /content/
 .mcp.json
 
+# ride recordings and photo originals carry exact locations; only the
+# processed copies (src/content/cycling/rides.json, public/off-the-clock/) ship
+/data/rides/*
+!/data/rides/.gitkeep
+/data/privacy-zones.json
+/photos/*
+!/photos/.gitkeep
+# raw recordings; the site serves the converted .mp4 files next to them
+/public/projects/*.mov
+/public/projects/*.gif
+
 # vercel
 .vercel
 

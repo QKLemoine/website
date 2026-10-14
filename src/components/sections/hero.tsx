@@ -22,7 +22,7 @@ function HeroVisual() {
         fill
         sizes="(min-width: 1200px) 336px, (min-width: 430px) 28vw, 120px"
         className="object-cover"
-        priority
+        preload
       />
     </div>
   )

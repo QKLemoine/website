@@ -9,12 +9,33 @@ export const profile = {
   linkedin: "https://linkedin.com/in/quintenlemoine",
   github: "https://github.com/QKLemoine",
   location: "Atlanta, GA",
+  /** IANA zone for the live local time shown next to the location. */
+  timeZone: "America/New_York",
   availability:
     "Open to internships and new-grad roles in ML and software engineering.",
   /** Shown in the hero after "Currently:". Keep it to one line. */
   currently:
     "AI/Clinical Data Intern at FDNA, building ML models for genetic-disease diagnosis.",
 }
+
+/** Headline numbers for the stats tile. Each one comes from the résumé. */
+export const stats: { value: string; label: string }[] = [
+  { value: "130+", label: "countries served by the models I support" },
+  { value: "100,000+", label: "patients in the clinical data" },
+  { value: "85%", label: "flood-event accuracy" },
+  { value: "3", label: "spoken languages" },
+]
+
+/**
+ * Phrases the editorial layout marks with the highlighter wherever they
+ * appear in the about text. Each must match the text exactly.
+ */
+export const highlights = [
+  "130+ countries",
+  "100,000+ patients",
+  "85% accuracy",
+  "back-to-back World Championship appearances",
+]
 
 /** Example questions the hero's "Ask me" bar cycles through. */
 export const askExamples = [
@@ -32,6 +53,8 @@ export const about = [
 
 export const education = {
   school: "Georgia Institute of Technology",
+  // TODO: expected graduation, e.g. "May 2028". Shown in the timeline once set.
+  graduation: "",
   location: "Atlanta, GA",
   degree: "Bachelor of Science in Computer Science",
   threads: ["Intelligence", "Theory"],
@@ -113,13 +136,46 @@ export type Project = {
    * full image when the card is expanded.
    */
   image?: string
-  /** Describes the image for screen readers. */
+  /** Describes the image or video for screen readers. */
   imageAlt?: string
+  /**
+   * Optional demo video, e.g. "/projects/ai-personal-trainer.mp4" (the file
+   * lives in public/projects/). In the style variants it loops silently while
+   * on screen, with a pause button. `image`, when also set, is its poster frame.
+   */
+  video?: string
+  /**
+   * Optional second clip, shown beside the first with its own caption (the
+   * two become "Fig. Na" and "Fig. Nb"). Needs `video` or `image` to pair with.
+   */
+  secondVideo?: { src: string; caption: string; poster?: string }
+  /** Optional second still, shown beside the first the same way. */
+  secondImage?: { src: string; caption: string }
+  /**
+   * Set when the images are line drawings on white. They are then shown
+   * whole instead of cropped, with the white dropped out so the lines sit on
+   * the page in either theme.
+   */
+  drawing?: boolean
+  /** Caption under the figure, shown as "Fig. N: …". */
+  figureCaption: string
+  /** What the figure should show. Labels the placeholder until `image` is set. */
+  figureBrief: string
+  /** Optional aside shown as a margin note in the notebook layout. */
+  note?: string
+  /** The project the bento layout gives the large tile. First one wins. */
+  featured?: boolean
 }
 
 export const projects: Project[] = [
   {
     title: "AI Personal Trainer",
+    featured: true,
+    // TODO: add image, e.g. "/projects/ai-personal-trainer.gif".
+    figureCaption:
+      "Body landmarks and joint angles tracked live, with the rep count.",
+    figureBrief:
+      "Screenshot or short GIF of the pose overlay on someone mid-exercise, with the rep counter visible.",
     summary:
       "A real-time computer vision coach that counts reps and assesses exercise form from a camera feed.",
     description:
@@ -132,6 +188,12 @@ export const projects: Project[] = [
   },
   {
     title: "Autonomous Robotics Toolkit",
+    video: "/projects/demo_planning.mp4",
+    image: "/projects/demo_planning.jpg",
+    figureCaption:
+      "An RRT* path through obstacles, before and after trajectory smoothing.",
+    figureBrief:
+      "Plot of an RRT* tree and the smoothed path, or the particle filter converging on the robot's position.",
     summary:
       "From-scratch implementations of core robotics algorithms: segmentation, path planning, localization and imitation learning.",
     description:
@@ -144,6 +206,12 @@ export const projects: Project[] = [
   },
   {
     title: "Pooling Strategy Analysis in CNNs",
+    video: "/projects/pooling-demo.mp4",
+    image: "/projects/pooling-demo.jpg",
+    figureCaption:
+      "Four CIFAR-10 classifiers tested on shifted images: at 4 pixels, global pooling loses 2 points of accuracy and windowed pooling loses 8.",
+    figureBrief:
+      "Chart comparing the pooling methods across the three architectures: accuracy, training speed or both.",
     summary:
       "A mathematical and empirical comparison of CNN pooling methods across three PyTorch architectures.",
     description:
@@ -156,6 +224,11 @@ export const projects: Project[] = [
   },
   {
     title: "AI Paper Finder",
+    video: "/projects/paperfinder-demo.mp4",
+    image: "/projects/paperfinder-demo.jpg",
+    figureCaption: "One day's digest: ranked papers with their summaries.",
+    figureBrief:
+      "Screenshot of the script's output: a list of surfaced papers with summarized abstracts.",
     summary:
       "A script that surfaces high-signal arXiv papers and summarizes their abstracts.",
     description:
@@ -167,7 +240,43 @@ export const projects: Project[] = [
     },
   },
   {
+    title: "FRC Competition Robots",
+    image: "/projects/encore-blue.webp",
+    imageAlt: "Line drawing of the robot Encore.",
+    secondImage: {
+      src: "/projects/carbon.webp",
+      caption: "Carbon, the other.",
+    },
+    drawing: true,
+    // TODO: a video of one of the robots running, when there is one.
+    figureCaption: "Encore, one of the two competition robots I helped build.",
+    figureBrief:
+      "Video of the robot in a match or driving autonomously, or photos of parts you machined.",
+    summary:
+      "Two seasons as machining lead on a 40-member FIRST Robotics team, building the robots and helping design their autonomous pathing and decision making.",
+    description:
+      "As machining lead for IHOT FRC Robotics from 2022 to 2024, I led machining and fabrication for a 40-member team, helped design the robot's autonomous pathing and decision making, and ran workshops for newer members. The team reached the FRC World Championship two years running and finished with a Top 5% international ranking, winning the Quality Award three times, the Autonomous Award four times, and the Industrial Award.",
+    tech: ["CNC machining", "CAD", "Autonomous programming"],
+    outcome: {
+      metric: "Top 5%",
+      label:
+        "international ranking, with back-to-back World Championship appearances",
+    },
+  },
+  {
     title: "Course Scheduling Platform",
+    video: "/projects/courseflow-demo.mp4",
+    image: "/projects/courseflow-demo.jpg",
+    secondVideo: {
+      src: "/projects/courseflow-how-it-works.mp4",
+      poster: "/projects/courseflow-how-it-works.jpg",
+      caption:
+        "How it works: the sorted queue, linked tables, login checks and calendar filter.",
+    },
+    figureCaption:
+      "A teacher sets an assignment, and it appears on the student's calendar.",
+    figureBrief:
+      "Screenshot of the student calendar view, or an entity-relationship diagram of the SQL schema.",
     summary:
       "A web app that gives teachers event management and students one calendar across all their classes.",
     description:
