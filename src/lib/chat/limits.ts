@@ -5,9 +5,9 @@ export const MAX_INPUT_CHARS = 500
 // question small and cheap.
 /** Conversation turns (question + answer pairs) sent as context. */
 export const MAX_TURNS = 3
-export const MAX_ASSISTANT_CHARS = 1200
+export const MAX_ASSISTANT_CHARS = 2000
 export const MAX_BODY_BYTES = 16_000
-export const MAX_OUTPUT_TOKENS = 220
+export const MAX_OUTPUT_TOKENS = 400
 
 export type ChatRole = "user" | "assistant"
 export type ChatMessage = { role: ChatRole; content: string }
