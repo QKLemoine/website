@@ -1,8 +1,8 @@
 /** Shared by the terminal client and the /api/chat route. */
 export const MAX_INPUT_CHARS = 500
-// History is kept short on purpose: small local models have a ~4k-token
-// window, and the system prompt (rules + portfolio data) must never be the
-// part that gets truncated.
+// History is kept short on purpose: every request resends the system prompt
+// (rules + portfolio data) plus the history, so a short history keeps each
+// question small and cheap.
 /** Conversation turns (question + answer pairs) sent as context. */
 export const MAX_TURNS = 3
 export const MAX_ASSISTANT_CHARS = 1200

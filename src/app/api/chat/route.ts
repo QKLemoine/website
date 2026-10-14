@@ -1,3 +1,5 @@
+import Anthropic from "@anthropic-ai/sdk";
+
 import {
   createLeakDetector,
   looksLikeInjection,
@@ -15,8 +17,11 @@ import { parseChatRequest } from "@/lib/chat/validate";
 
 export const maxDuration = 30;
 
-/** Time allowed for the provider to start answering (covers a cold model load). */
+/** Time allowed for Claude to start answering. */
 const FIRST_BYTE_TIMEOUT_MS = 25_000;
+
+/** Fast and inexpensive; CHAT_MODEL can name another Claude model instead. */
+const DEFAULT_MODEL = "claude-haiku-5-5";
 
 const perMinute = createRateLimiter(8, 60_000);
 const perDay = createRateLimiter(80, 24 * 60 * 60_000);
@@ -62,56 +67,89 @@ async function readBody(request: Request): Promise<string | null> {
   return body + decoder.decode();
 }
 
-function deltaText(event: unknown): string {
-  if (typeof event !== "object" || event === null) return "";
-  const choices = (event as { choices?: unknown }).choices;
-  if (!Array.isArray(choices)) return "";
-  const delta = (choices[0] as { delta?: { content?: unknown } } | undefined)
-    ?.delta;
-  return typeof delta?.content === "string" ? delta.content : "";
-}
-
 const TEXT_HEADERS = {
   "Content-Type": "text/plain; charset=utf-8",
   "Cache-Control": "no-store",
   "X-Content-Type-Options": "nosniff",
 };
 
-/** Turns the provider's SSE stream into plain text, so the client only ever sees answer text. */
-function sseToText(upstream: ReadableStream<Uint8Array>) {
-  const decoder = new TextDecoder();
+type ClaudeStream = ReturnType<Anthropic["messages"]["stream"]>;
+type StreamEvent = Anthropic.MessageStreamEvent;
+
+/**
+ * Turns Claude's stream into plain text, so the client only ever sees answer
+ * text. `first` is the event already read while checking that Claude answered.
+ */
+function answerText(
+  stream: ClaudeStream,
+  events: AsyncIterator<StreamEvent>,
+  first: StreamEvent
+) {
   const encoder = new TextEncoder();
   const leaked = createLeakDetector();
-  let buffer = "";
+  let pending: StreamEvent | null = first;
+  let sentText = false;
 
-  return upstream.pipeThrough(
-    new TransformStream<Uint8Array, Uint8Array>({
-      transform(chunk, controller) {
-        buffer += decoder.decode(chunk, { stream: true });
-        const lines = buffer.split("\n");
-        buffer = lines.pop() ?? "";
-        for (const line of lines) {
-          const trimmed = line.trim();
-          if (!trimmed.startsWith("data:")) continue;
-          const data = trimmed.slice(5).trim();
-          if (data === "[DONE]") continue;
-          try {
-            const piece = deltaText(JSON.parse(data));
-            if (!piece) continue;
-            if (leaked(piece)) {
-              // The model began reciting its instructions: stop the answer here.
-              controller.enqueue(encoder.encode(`\n\n[stopped] ${REFUSAL}`));
-              controller.terminate();
+  return new ReadableStream<Uint8Array>({
+    async pull(controller) {
+      try {
+        for (;;) {
+          let event = pending;
+          pending = null;
+          if (!event) {
+            const next = await events.next();
+            if (next.done) {
+              controller.close();
               return;
             }
-            controller.enqueue(encoder.encode(piece));
-          } catch {
-            // A malformed event is skipped; the rest of the answer still streams.
+            event = next.value;
+          }
+          if (
+            event.type === "content_block_delta" &&
+            event.delta.type === "text_delta" &&
+            event.delta.text
+          ) {
+            if (leaked(event.delta.text)) {
+              // The model began reciting its instructions: stop the answer here.
+              controller.enqueue(encoder.encode(`\n\n[stopped] ${REFUSAL}`));
+              controller.close();
+              stream.abort();
+              return;
+            }
+            sentText = true;
+            controller.enqueue(encoder.encode(event.delta.text));
+            return;
+          }
+          // A declined request can end with no text at all; say so plainly.
+          if (
+            event.type === "message_delta" &&
+            event.delta.stop_reason === "refusal" &&
+            !sentText
+          ) {
+            sentText = true;
+            controller.enqueue(encoder.encode(REFUSAL));
+            return;
           }
         }
-      },
-    })
-  );
+      } catch (error) {
+        logClaudeError(error);
+        controller.close();
+      }
+    },
+    cancel() {
+      stream.abort();
+    },
+  });
+}
+
+/** Provider details stay in the server log, never in the response. */
+function logClaudeError(error: unknown) {
+  if (error instanceof Anthropic.APIUserAbortError) return;
+  if (error instanceof Anthropic.APIError) {
+    console.error(`[chat] Claude responded ${error.status ?? "without a status"}`);
+  } else {
+    console.error("[chat] Claude request failed");
+  }
 }
 
 export async function POST(request: Request) {
@@ -125,9 +163,8 @@ export async function POST(request: Request) {
     });
   }
 
-  const baseUrl = process.env.CHAT_BASE_URL;
-  const model = process.env.CHAT_MODEL;
-  if (!baseUrl || !model) return fail("not_configured", 503);
+  if (!process.env.ANTHROPIC_API_KEY) return fail("not_configured", 503);
+  const model = process.env.CHAT_MODEL || DEFAULT_MODEL;
 
   const body = await readBody(request);
   if (body === null) return fail("invalid_request", 413);
@@ -147,44 +184,41 @@ export async function POST(request: Request) {
   }
   question.content = wrapVisitorMessage(question.content);
 
-  const apiKey = process.env.CHAT_API_KEY;
-  // The timeout only guards the wait for the first byte. Once the answer is
-  // streaming it is bounded by max_tokens and the platform's maxDuration, so a
-  // slow local model isn't cut off mid-sentence.
-  const startTimeout = new AbortController();
-  const timer = setTimeout(() => startTimeout.abort(), FIRST_BYTE_TIMEOUT_MS);
-  let upstream: Response;
+  // Reads ANTHROPIC_API_KEY from the environment; it never reaches the browser.
+  const client = new Anthropic({ maxRetries: 1 });
+  const stream = client.messages.stream(
+    {
+      model,
+      max_tokens: MAX_OUTPUT_TOKENS,
+      // Short factual answers need no deliberation: with thinking off and low
+      // effort the answer starts quickly and max_tokens is all answer.
+      thinking: { type: "disabled" },
+      output_config: { effort: "low" },
+      system: buildSystemPrompt(),
+      messages,
+    },
+    // Also stops the request when the visitor disconnects.
+    { signal: request.signal }
+  );
+
+  // Wait for Claude's first event before answering, so a failure (bad key,
+  // rate limit, outage) comes back as an error rather than an empty answer.
+  // The timeout only guards that wait; the answer itself is bounded by
+  // max_tokens and the platform's maxDuration.
+  const events = stream[Symbol.asyncIterator]();
+  const timer = setTimeout(() => stream.abort(), FIRST_BYTE_TIMEOUT_MS);
+  let first: IteratorResult<StreamEvent>;
   try {
-    upstream = await fetch(`${baseUrl.replace(/\/$/, "")}/chat/completions`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        ...(apiKey ? { Authorization: `Bearer ${apiKey}` } : {}),
-      },
-      body: JSON.stringify({
-        model,
-        stream: true,
-        temperature: 0.2,
-        max_tokens: MAX_OUTPUT_TOKENS,
-        messages: [
-          { role: "system", content: buildSystemPrompt() },
-          ...messages,
-        ],
-      }),
-      // Also stops the provider call when the visitor disconnects.
-      signal: AbortSignal.any([request.signal, startTimeout.signal]),
-    });
-  } catch {
+    first = await events.next();
+  } catch (error) {
+    logClaudeError(error);
     return fail("upstream_error", 502);
   } finally {
     clearTimeout(timer);
   }
+  if (first.done) return fail("upstream_error", 502);
 
-  if (!upstream.ok || !upstream.body) {
-    // Provider details stay in the server log, never in the response.
-    console.error(`[chat] upstream responded ${upstream.status}`);
-    return fail("upstream_error", 502);
-  }
-
-  return new Response(sseToText(upstream.body), { headers: TEXT_HEADERS });
+  return new Response(answerText(stream, events, first.value), {
+    headers: TEXT_HEADERS,
+  });
 }
