@@ -149,8 +149,11 @@ export type Project = {
    * two become "Fig. Na" and "Fig. Nb"). Needs `video` or `image` to pair with.
    */
   secondVideo?: { src: string; caption: string; poster?: string }
-  /** Optional second still, shown beside the first the same way. */
-  secondImage?: { src: string; caption: string }
+  /**
+   * Optional second figure of stills, shown beside the first the same way.
+   * List several images to fit them side by side into that one slot.
+   */
+  secondImage?: { images: { src: string; alt: string }[]; caption: string }
   /**
    * Set when the images are line drawings on white. They are then shown
    * whole instead of cropped, with the white dropped out so the lines sit on
@@ -245,11 +248,14 @@ export const projects: Project[] = [
     image: "/projects/frc-robot-demo.jpg",
     imageAlt: "Encore driving itself across the practice field.",
     secondImage: {
-      src: "/projects/encore-blue.webp",
-      caption: "Encore's line drawing, from the same robot.",
+      images: [
+        { src: "/projects/encore-blue.webp", alt: "Line drawing of Encore." },
+        { src: "/projects/carbon.webp", alt: "Line drawing of Carbon." },
+      ],
+      caption:
+        "Line drawings of Encore, left, and Carbon, right, the two competition robots I helped build.",
     },
     drawing: true,
-    // Also available: /projects/carbon.webp, the line drawing of Carbon.
     figureCaption: "Encore driving itself in autonomous mode on the practice field.",
     figureBrief:
       "Video of the robot in a match or driving autonomously, or photos of parts you machined.",

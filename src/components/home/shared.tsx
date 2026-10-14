@@ -29,19 +29,23 @@ export function ProjectImage({
   src,
   alt,
   drawing = false,
+  fill = false,
   sizes,
   className,
 }: {
   src: string
   alt: string
   drawing?: boolean
+  /** Take the parent's size instead of the usual 16:10 slot. */
+  fill?: boolean
   sizes: string
   className?: string
 }) {
   return (
     <div
       className={cn(
-        "relative aspect-16/10 overflow-hidden",
+        "relative overflow-hidden",
+        fill ? "size-full" : "aspect-16/10",
         drawing && "bg-card ring-1 ring-foreground/10",
         className
       )}
@@ -162,15 +166,37 @@ export function ProjectFigures({
               label={project.secondVideo.caption}
               className={visualClassName}
             />
-          ) : (
+          ) : project.secondImage && project.secondImage.images.length > 1 ? (
+            // Several stills share the one slot, side by side.
+            <div
+              className={cn(
+                "grid aspect-16/10 gap-2",
+                project.secondImage.images.length === 2
+                  ? "grid-cols-2"
+                  : "grid-cols-3"
+              )}
+            >
+              {project.secondImage.images.map((image) => (
+                <ProjectImage
+                  key={image.src}
+                  src={image.src}
+                  alt={image.alt}
+                  drawing={project.drawing}
+                  fill
+                  sizes="(min-width: 640px) 220px, 50vw"
+                  className={visualClassName}
+                />
+              ))}
+            </div>
+          ) : project.secondImage ? (
             <ProjectImage
-              src={second.src}
-              alt={second.caption}
+              src={project.secondImage.images[0].src}
+              alt={project.secondImage.images[0].alt}
               drawing={project.drawing}
               sizes={sizes}
               className={visualClassName}
             />
-          )}
+          ) : null}
           <figcaption className={captionClassName}>
             {label(`Fig. ${number}b`)} {second.caption}
           </figcaption>
