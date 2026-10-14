@@ -14,6 +14,5 @@ photos:
     caption: "TODO: caption"
 ---
 
-- TODO: the club you support
-- TODO: where you play, and in what position
-- TODO: a match you won't forget
+- I support France and the Netherlands, and Ajax and Manchester United at club level.
+- Two games I'll never forget: France against Croatia in the 2018 World Cup final, and Argentina against the Netherlands in the 2022 World Cup quarter-final.

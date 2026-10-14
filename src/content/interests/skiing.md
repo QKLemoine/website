@@ -13,6 +13,6 @@ photos:
   # TODO: one to four more photos in photos/Skiing/.
 ---
 
-- TODO: where you learned
-- TODO: favourite resort or run
-- TODO: skis or snowboard, and how often you go
+- I've been skiing for 15 years, and the mountain is where I go to clear my head.
+- I love both park and all-mountain skiing.
+- I keep up with the professional competitions too.
