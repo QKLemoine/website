@@ -8,13 +8,13 @@ photos:
   - src: /off-the-clock/Coffee/IMG_5268.jpg
     caption: "An iced latte with cold foam."
   - src: /off-the-clock/Coffee/Stgermain.jpg
-    caption: "Inside St. Germain."
+    caption: "Inside St. Germain Café, where I worked as a barista for three years."
   - src: /off-the-clock/Coffee/IMG_5381.jpg
     caption: "A coconut coffee, on the go."
   - src: /off-the-clock/Coffee/IMG_5325.jpg
     caption: "A purple iced drink topped with crumble."
 ---
 
-- TODO: how you take it, or how you brew it at home
-- TODO: a favourite café or roaster
-- TODO: what got you into it
+- I spent three years as a barista at St. Germain Café, and coffee has stayed a passion since.
+- I've visited four coffee museums and regularly brew coffee for groups around campus to try.
+- These are a few standouts, though my favorite is still a classic cappuccino.
