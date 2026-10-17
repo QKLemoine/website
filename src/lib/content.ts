@@ -191,6 +191,24 @@ export const projects: Project[] = [
     },
   },
   {
+    title: "Flood and Drought Prediction",
+    // TODO: demo video ("/projects/flood-demo.mp4") and a link to the demo site.
+    figureCaption:
+      "Predicted flood risk across regional grid cells, drawn as a heatmap.",
+    figureBrief:
+      "Demo video or screenshot of the flood-risk heatmap over the region.",
+    summary:
+      "An LSTM model for Georgia Tech's Big Data Big Impact Aquatic Sustainability Project that predicts flood and drought risk across Asia.",
+    description:
+      "Built for the Aquatic Sustainability Project in Georgia Tech's Big Data Big Impact program, this LSTM-based model predicts flood and drought risk across Asia. It processes millions of geospatial and climate radar-derived data points on rainfall, elevation and runoff, and later temperature and elevation feature pipelines improved its accuracy and generalization across diverse flood events. A geospatial gradient visualization maps predicted water accumulation and runoff severity across regional grid cells, turning raw model output into a risk heatmap that faculty and domain experts can read.",
+    // TODO: confirm the stack (e.g. Python, PyTorch) and replace these.
+    tech: ["LSTM", "Geospatial data", "Time series"],
+    outcome: {
+      metric: "85% accuracy",
+      label: "on historical flood events across Asia",
+    },
+  },
+  {
     title: "Autonomous Robotics Toolkit",
     video: "/projects/demo_planning.mp4",
     image: "/projects/demo_planning.jpg",
