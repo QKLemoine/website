@@ -9,10 +9,10 @@ photos:
     caption: "An iced latte with cold foam."
   - src: /off-the-clock/Coffee/Stgermain.jpg
     caption: "Inside St. Germain Café, where I worked as a barista for three years."
-  - src: /off-the-clock/Coffee/IMG_5381.jpg
-    caption: "A coconut coffee, on the go."
   - src: /off-the-clock/Coffee/IMG_5325.jpg
     caption: "A purple iced drink topped with crumble."
+  - src: /off-the-clock/Coffee/IMG_5381.jpg
+    caption: "A coconut coffee, on the go."
 ---
 
 - I spent three years as a barista at St. Germain Café, and coffee has stayed a passion since.
