@@ -10,7 +10,7 @@ photos:
   - src: /off-the-clock/Coffee/Stgermain.jpg
     caption: "Inside St. Germain."
   - src: /off-the-clock/Coffee/IMG_5381.jpg
-    caption: "Something green and iced, on the go."
+    caption: "A coconut coffee, on the go."
   - src: /off-the-clock/Coffee/IMG_5325.jpg
     caption: "A purple iced drink topped with crumble."
 ---
