@@ -191,21 +191,21 @@ export const projects: Project[] = [
     },
   },
   {
-    title: "Flood and Drought Prediction",
-    // TODO: demo video ("/projects/flood-demo.mp4") and a link to the demo site.
+    title: "Flood Forecasting",
+    video: "/projects/flood-model-loop-dark.mp4",
+    image: "/projects/flood-model-loop-dark.jpg",
     figureCaption:
-      "Predicted flood risk across regional grid cells, drawn as a heatmap.",
-    figureBrief:
-      "Demo video or screenshot of the flood-risk heatmap over the region.",
+      "Inside the model: a CNN per satellite stream, an LSTM reading 32 time steps, terrain added before the decision, then every land cell in Southeast Asia scored.",
+    figureBrief: "Demo video of the model and the regional risk map.",
     summary:
-      "An LSTM model for Georgia Tech's Big Data Big Impact Aquatic Sustainability Project that predicts flood and drought risk across Asia.",
+      "A multi-stream CNN-LSTM that predicts flood onset across Southeast Asia five days ahead from live satellite data, built for Georgia Tech's Big Data Big Impact Aquatic Sustainability Project.",
     description:
-      "Built for the Aquatic Sustainability Project in Georgia Tech's Big Data Big Impact program, this LSTM-based model predicts flood and drought risk across Asia. It processes millions of geospatial and climate radar-derived data points on rainfall, elevation and runoff, and later temperature and elevation feature pipelines improved its accuracy and generalization across diverse flood events. A geospatial gradient visualization maps predicted water accumulation and runoff severity across regional grid cells, turning raw model output into a risk heatmap that faculty and domain experts can read.",
-    // TODO: confirm the stack (e.g. Python, PyTorch) and replace these.
-    tech: ["LSTM", "Geospatial data", "Time series"],
+      "For the Aquatic Sustainability Project in Georgia Tech's Big Data Big Impact program, I developed a deep learning model that predicts the onset of floods across Southeast Asia five days in advance from live satellite data. The model, a custom PyTorch architecture called DualCNNLSTM, takes three satellite streams: NASA GPM IMERG rainfall, NASA SMAP soil moisture and ECMWF ERA5-Land temperature. Each stream is cropped to a patch around the target location and stacked into a 32-step sequence, and a convolutional encoder per stream, sharing its weights across time steps, turns every frame into one combined 3,072-value vector. A 64-unit LSTM reads those vectors in order, so it can capture slow build-ups such as soil becoming saturated weeks before a storm arrives. Terrain doesn't change over time, so a separate CNN branch encodes elevation and joins the LSTM's output just before the final sigmoid layer. To build the training data, I aligned each source to its own lookback window before documented flood onset dates, added validity-mask channels so the model can tell missing satellite pixels from real zeros, and reduced overfitting with dropout, batch normalization and a rebalanced 75/25 non-flood-to-flood training split. On a held-out test set it detected 208 of 264 flood events (78.8% recall) and correctly cleared 47 of 72 non-flood events, for 75.9% overall accuracy. A batch inference pipeline scores every 1° land cell in the region using fresh satellite data, and the model is also served through a Flask API on Google Cloud Run with Redis caching, feeding an interactive Google Maps risk overlay.",
+    tech: ["PyTorch", "CNN-LSTM", "xarray", "rasterio", "Flask", "Google Cloud Run"],
     outcome: {
-      metric: "85% accuracy",
-      label: "on historical flood events across Asia",
+      metric: "5 days ahead",
+      label:
+        "flood onset predicted from live satellite data, catching 78.8% of held-out flood events",
     },
   },
   {
