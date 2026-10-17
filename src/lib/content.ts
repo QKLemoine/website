@@ -174,9 +174,10 @@ export const projects: Project[] = [
   {
     title: "AI Personal Trainer",
     featured: true,
-    // TODO: add image, e.g. "/projects/ai-personal-trainer.gif".
+    video: "/projects/form-trainer-demo.mp4",
+    image: "/projects/form-trainer-demo.jpg",
     figureCaption:
-      "Body landmarks and joint angles tracked live, with the rep count.",
+      "Each arm tracked on its own in the phone's browser, calibrated to its own range, then counting bicep curls.",
     figureBrief:
       "Screenshot or short GIF of the pose overlay on someone mid-exercise, with the rep counter visible.",
     summary:
