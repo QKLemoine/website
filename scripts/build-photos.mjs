@@ -7,6 +7,9 @@
 // becomes /off-the-clock/travel/lisbon-1.jpg, which is the path to use in the
 // content files.
 //
+// Folders whose name starts with "_" are skipped, so untouched originals can
+// sit beside edited versions (e.g. photos/_originals/) without being published.
+//
 // Originals must never go in public/: anything there is downloadable as-is,
 // GPS coordinates included. sharp drops all metadata unless told to keep it,
 // so the published copies carry no location, camera or date information.
@@ -30,8 +33,9 @@ const FORMATS = new Set([".jpg", ".jpeg", ".png", ".webp", ".heic", ".heif", ".a
 function* walk(directory) {
   for (const name of readdirSync(directory)) {
     const path = join(directory, name)
-    if (statSync(path).isDirectory()) yield* walk(path)
-    else if (FORMATS.has(extname(name).toLowerCase())) yield path
+    if (statSync(path).isDirectory()) {
+      if (!name.startsWith("_")) yield* walk(path)
+    } else if (FORMATS.has(extname(name).toLowerCase())) yield path
   }
 }
 
