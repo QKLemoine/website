@@ -105,6 +105,23 @@ function ProjectEntry({
       <p className={cn(SMALL_CAPS, "mt-3 text-sm text-primary")}>
         {project.tech.join(" / ")}
       </p>
+      {project.links && project.links.length > 0 && (
+        <ul className="mt-2 flex flex-wrap gap-x-5 gap-y-1 text-sm">
+          {project.links.map((link) => (
+            <li key={link.href}>
+              <a
+                href={link.href}
+                target="_blank"
+                rel="noreferrer"
+                className="inline-flex items-center gap-0.5 underline decoration-primary underline-offset-4 outline-none hover:text-primary focus-visible:text-primary"
+              >
+                {link.label}
+                <ArrowUpRight aria-hidden className="size-3.5" />
+              </a>
+            </li>
+          ))}
+        </ul>
+      )}
       <details className="group/details mt-3 border-t border-border pt-2">
         <summary className="cursor-pointer list-none rounded-sm text-sm text-muted-foreground underline-offset-4 outline-none hover:text-foreground hover:underline focus-visible:ring-3 focus-visible:ring-ring/50 [&::-webkit-details-marker]:hidden">
           <span className="group-open/details:hidden">Read the write-up</span>

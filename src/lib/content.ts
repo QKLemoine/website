@@ -172,7 +172,7 @@ export type Project = {
 
 export const projects: Project[] = [
   {
-    title: "AI Personal Trainer",
+    title: "Biomechanical Form Tracker & Rep Counter",
     featured: true,
     video: "/projects/form-trainer-demo.mp4",
     image: "/projects/form-trainer-demo.jpg",
@@ -181,14 +181,18 @@ export const projects: Project[] = [
     figureBrief:
       "Screenshot or short GIF of the pose overlay on someone mid-exercise, with the rep counter visible.",
     summary:
-      "A real-time computer vision coach that counts reps and assesses exercise form from a camera feed.",
+      "A pose-based rep counter and form scorer built on MediaPipe, as a Python desktop app and a TypeScript web app that runs in a phone's browser. Its rep-tracking implementation was selected for XERJ's Corpus Hub.",
     description:
-      "A real-time computer vision pipeline that tracks body landmarks, computes joint angles, counts repetitions, and assesses exercise form — aimed at bringing quality fitness coaching to anyone with a camera. Landmark extraction is decoupled from correction logic in a modular pose-detection architecture, and Dynamic Time Warping compares a user's movement against reference form to drive live visual feedback.",
-    tech: ["Python", "OpenCV", "MediaPipe", "Dynamic Time Warping"],
+      "A pose-based rep counter and form scorer built on MediaPipe, with a Python desktop app and a TypeScript web app that runs in a phone's browser. It counts reps from 3D joint angles calibrated separately for each side of the body, ignores limbs the camera can't see so a hidden arm doesn't add false reps, and scores form by comparing each rep against a recorded golden rep with Dynamic Time Warping; its tests replay real recorded landmark data. The rep-tracking implementation, built to hold up against noisy, biased and hidden landmarks, was selected for XERJ's Corpus Hub, an open index of code solutions that AI coding agents can retrieve as reference implementations, with attribution to me and the repository.",
+    tech: ["Python", "TypeScript", "MediaPipe", "OpenCV", "Dynamic Time Warping"],
     outcome: {
-      metric: "Real-time",
-      label: "rep counting and form feedback from a single camera",
+      metric: "Per-side calibration",
+      label: "and hidden-limb handling for reliable rep counts from noisy pose data",
     },
+    // TODO: add { label: "Corpus Hub entry", href: "..." } once you have the link.
+    links: [
+      { label: "Code on GitHub", href: "https://github.com/QKLemoine/Form-Tracker-Rep-Counter" },
+    ],
   },
   {
     title: "Flood Forecasting",
