@@ -189,9 +189,9 @@ export const projects: Project[] = [
       metric: "Per-side calibration",
       label: "and hidden-limb handling for reliable rep counts from noisy pose data",
     },
-    // TODO: add { label: "Corpus Hub entry", href: "..." } once you have the link.
     links: [
       { label: "Code on GitHub", href: "https://github.com/QKLemoine/Form-Tracker-Rep-Counter" },
+      { label: "Corpus Hub profile", href: "https://hub.xerj.org/contributors/QKLemoine" },
     ],
   },
   {
