@@ -251,7 +251,12 @@ export function HomeSections() {
       </Section>
 
       <Section id="off-the-clock" number={4} label="Off the clock">
-        <OffTheClock headingClassName={cn(DISPLAY, "text-3xl leading-none")} />
+        <OffTheClock
+          headingClassName={cn(DISPLAY, "text-3xl leading-none")}
+          // Reaches back across the numbered rail (two of the twelve columns
+          // plus their gaps), so the cards centre on the page, not the column.
+          interestsClassName="lg:-ml-[calc(20%+0.4rem)]"
+        />
       </Section>
 
       <Section id="contact" number={5} label="Contact">

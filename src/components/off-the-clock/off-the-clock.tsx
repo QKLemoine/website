@@ -103,8 +103,11 @@ function RideHeatmap({
  */
 export function OffTheClock({
   headingClassName = "text-lg font-semibold",
+  interestsClassName,
 }: {
   headingClassName?: string
+  /** Extra classes for the row of interest cards, e.g. to widen it. */
+  interestsClassName?: string
 }) {
   const cycling = getCycling()
   const interests = getInterests()
@@ -170,7 +173,14 @@ export function OffTheClock({
         </div>
       </div>
 
-      <ul className="grid gap-x-6 gap-y-8 border-t border-border pt-8 sm:grid-cols-2 lg:grid-cols-4">
+      <ul
+        className={cn(
+          "grid gap-x-8 gap-y-10 border-t border-border pt-8 sm:grid-cols-2",
+          // One column per card, so a short row fills the width evenly.
+          interests.length >= 4 ? "lg:grid-cols-4" : "lg:grid-cols-3",
+          interestsClassName
+        )}
+      >
         {interests.map((interest, index) => (
           <li key={interest.slug}>
             <Gallery

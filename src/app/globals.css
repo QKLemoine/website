@@ -30,6 +30,7 @@
   --color-card-foreground: var(--card-foreground);
   --color-card: var(--card);
   --color-signal: var(--signal);
+  --color-print: var(--print);
   --radius-sm: calc(var(--radius) * 0.6);
   --radius-md: calc(var(--radius) * 0.8);
   --radius-lg: var(--radius);
@@ -60,6 +61,8 @@
   --on-brand: #ffffff;
   /* Secondary accent, a warm amber: 5.0:1 on --page, 5.4 on --surface. */
   --signal: #8a5a00;
+  /* The thin print border around interest photos. */
+  --print: #ffffff;
 
   --radius: 0.625rem;
   --destructive: oklch(0.577 0.245 27.325);
@@ -96,6 +99,8 @@
   --on-brand: #0b1220;
   /* 8.8:1 on --page, 8.2 on --surface. */
   --signal: #e0a84b;
+  /* Off-white rather than pure white, so prints don't glare on navy. */
+  --print: #e4e8ef;
 
   --destructive: oklch(0.704 0.191 22.216);
 }

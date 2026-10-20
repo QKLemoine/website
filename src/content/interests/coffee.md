@@ -7,6 +7,8 @@ order: 4
 photos:
   - src: /off-the-clock/Coffee/IMG_5268.jpg
     caption: "An iced latte with cold foam."
+    # Shows the foam at the top when the card crops it to a wide frame.
+    position: "50% 22%"
   - src: /off-the-clock/Coffee/Stgermain.jpg
     caption: "Inside St. Germain Café, where I worked as a barista for three years."
   - src: /off-the-clock/Coffee/IMG_5325.jpg
