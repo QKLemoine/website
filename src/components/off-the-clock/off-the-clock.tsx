@@ -69,7 +69,7 @@ function RideHeatmap({
   cycling: ReturnType<typeof getCycling>
 }) {
   return (
-    <div className="relative aspect-16/10 overflow-hidden rounded-lg bg-card ring-1 ring-foreground/10">
+    <div className="relative aspect-2/1 overflow-hidden rounded-lg bg-card ring-1 ring-foreground/10">
       <svg
         viewBox={cycling.viewBox}
         role="img"
@@ -159,11 +159,14 @@ export function OffTheClock({
               </div>
             ))}
           </dl>
-          <div className="mt-3 flex items-start gap-3">
+          {/* The photo gets real room, so the bike is easy to see; the caption
+              sits beside it on wider screens and under it on phones. */}
+          <div className="mt-4 flex flex-col gap-3 sm:flex-row sm:items-start sm:gap-4">
             <Gallery
               title="Cycling"
               photos={cycling.photos}
               strip
+              large
               className="shrink-0"
             />
             <p className="text-sm leading-relaxed text-muted-foreground">

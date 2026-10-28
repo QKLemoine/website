@@ -1,12 +1,12 @@
-"use client"
+"use client";
 
-import { X } from "lucide-react"
-import { useRef, type ReactNode } from "react"
+import { X } from "lucide-react";
+import { useRef, type ReactNode } from "react";
 
-import type { Photo } from "@/lib/off-the-clock"
-import { cn } from "@/lib/utils"
+import type { Photo } from "@/lib/off-the-clock";
+import { cn } from "@/lib/utils";
 
-import { PhotoFill } from "./photo"
+import { PhotoFill } from "./photo";
 
 /**
  * Card collages: where each of the first three photos sits. The blocks rotate
@@ -33,7 +33,7 @@ const PREVIEWS = [
     grid: "grid-cols-[2fr_3fr_2fr] grid-rows-1",
     cells: ["", "", ""],
   },
-]
+];
 
 /**
  * A small preview of a set of photos that opens all of them, with captions,
@@ -45,19 +45,22 @@ export function Gallery({
   photos,
   layout = 0,
   strip = false,
+  large = false,
   className,
 }: {
-  title: string
-  photos: Photo[]
-  layout?: number
-  strip?: boolean
-  className?: string
+  title: string;
+  photos: Photo[];
+  layout?: number;
+  strip?: boolean;
+  /** With `strip`: show each photo large (3:2) instead of as a small thumbnail. */
+  large?: boolean;
+  className?: string;
 }) {
-  const dialogRef = useRef<HTMLDialogElement>(null)
-  if (photos.length === 0) return null
+  const dialogRef = useRef<HTMLDialogElement>(null);
+  if (photos.length === 0) return null;
 
-  const preview = PREVIEWS[layout % PREVIEWS.length]
-  const shown = strip ? photos : photos.slice(0, 3)
+  const preview = PREVIEWS[layout % PREVIEWS.length];
+  const shown = strip ? photos : photos.slice(0, 3);
   // The collages need three photos; one fills the frame, and two stand
   // side by side as tall halves, which suits phone photos better than wide strips.
   const grid =
@@ -65,22 +68,28 @@ export function Gallery({
       ? "grid-cols-1 grid-rows-1"
       : shown.length === 2
         ? "grid-cols-2 grid-rows-1"
-        : preview.grid
+        : preview.grid;
 
-  let trigger: ReactNode
+  let trigger: ReactNode;
   if (strip) {
     trigger = (
       <span className="flex gap-1.5">
         {shown.map((photo) => (
           <span
             key={photo.src}
-            className="relative block aspect-4/3 w-20 overflow-hidden rounded-sm"
+            className={cn(
+              "relative block overflow-hidden rounded-sm",
+              large ? "aspect-3/2 w-full sm:w-56" : "aspect-4/3 w-20",
+            )}
           >
-            <PhotoFill photo={photo} sizes="80px" />
+            <PhotoFill
+              photo={photo}
+              sizes={large ? "(min-width: 640px) 224px, 100vw" : "80px"}
+            />
           </span>
         ))}
       </span>
-    )
+    );
   } else {
     trigger = (
       <span className={cn("grid aspect-4/3 gap-2", grid)}>
@@ -91,11 +100,14 @@ export function Gallery({
             key={photo.src}
             className={cn(
               "group/cell flex min-h-0 flex-col rounded-[3px] bg-print p-1 pb-3 shadow-sm ring-1 ring-black/10",
-              shown.length === 3 && preview.cells[index]
+              shown.length === 3 && preview.cells[index],
             )}
           >
             <span className="relative block min-h-0 flex-1 overflow-hidden">
-              <PhotoFill photo={photo} sizes="(min-width: 1024px) 360px, 50vw" />
+              <PhotoFill
+                photo={photo}
+                sizes="(min-width: 1024px) 360px, 50vw"
+              />
               {photo.caption && !photo.missing && (
                 <span className="absolute inset-x-0 bottom-0 bg-black/65 px-1.5 py-1 text-left text-[11px] leading-tight text-white opacity-0 transition-opacity group-hover/cell:opacity-100 group-focus-visible/trigger:opacity-100">
                   {photo.caption}
@@ -105,7 +117,7 @@ export function Gallery({
           </span>
         ))}
       </span>
-    )
+    );
   }
 
   return (
@@ -117,7 +129,7 @@ export function Gallery({
         className={cn(
           "group/trigger block rounded-md outline-none focus-visible:ring-3 focus-visible:ring-ring/60",
           !strip && "w-full",
-          className
+          className,
         )}
       >
         {trigger}
@@ -127,7 +139,7 @@ export function Gallery({
         aria-label={`${title} photos`}
         // A click on the backdrop lands on the dialog element itself.
         onClick={(event) => {
-          if (event.target === event.currentTarget) event.currentTarget.close()
+          if (event.target === event.currentTarget) event.currentTarget.close();
         }}
         className="m-auto max-h-[90dvh] w-[min(60rem,calc(100vw-2rem))] overflow-y-auto rounded-xl bg-popover p-0 text-popover-foreground shadow-2xl ring-1 ring-foreground/10 backdrop:bg-black/70"
       >
@@ -149,7 +161,7 @@ export function Gallery({
             className={cn(
               "mt-3 gap-3",
               photos.length > 1 && "sm:columns-2",
-              photos.length > 2 && "lg:columns-3"
+              photos.length > 2 && "lg:columns-3",
             )}
           >
             {photos.map((photo) => (
@@ -175,5 +187,5 @@ export function Gallery({
         </div>
       </dialog>
     </>
-  )
+  );
 }

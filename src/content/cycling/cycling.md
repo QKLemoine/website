@@ -10,10 +10,10 @@ stats:
     label: "climbed on the stationary bike, 19.7 miles straight up"
   - value: "~10,000 ft"
     label: "climbed on the road"
-# Shown beside the caption. One or two photos.
+# Shown beside the caption, at a good size. One or two photos.
 photos:
-  - src: /off-the-clock/cycling/cycling-1.jpg
-    caption: "TODO: where this was taken"
+  - src: /off-the-clock/Cycling/bike.jpg
+    caption: "My road bike, a green Trek."
 ---
 
 Most of my miles so far are on a stationary bike: 485 in 2025 and about 500 of this year's 600. The latest 100 have been out on the road.
