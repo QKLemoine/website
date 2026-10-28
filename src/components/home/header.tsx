@@ -3,7 +3,7 @@ import type { ReactNode } from "react"
 
 import { AskPrompt } from "@/components/agent/ask-triggers"
 import { BackgroundLayer } from "@/components/background/background-layer"
-import { askExamples, education, profile } from "@/lib/content"
+import { askExamples, profile } from "@/lib/content"
 import { cn } from "@/lib/utils"
 
 import { socials } from "./shared"
@@ -82,19 +82,14 @@ export function HomeHeader() {
           </div>
         }
       >
-        <dl className="grid grid-cols-[5.5rem_1fr] gap-x-3 gap-y-0.5 font-mono text-xs text-muted-foreground">
-          <dt>author</dt>
-          <dd className="text-foreground">{profile.name}</dd>
-          <dt>affiliation</dt>
-          <dd>
-            {education.school}, {education.degree.replace("Bachelor of Science", "BS")}
-          </dd>
-          <dt>location</dt>
-          <dd>{profile.location}</dd>
-          <dt className="text-signal">currently</dt>
-          <dd>{profile.currently}</dd>
-        </dl>
-        <h1 className="mt-6 font-serif text-[2.5rem] leading-[1.05] tracking-tight text-balance sm:text-6xl">
+        <p className="text-xl font-semibold tracking-tight text-foreground sm:text-2xl">
+          {profile.name}
+        </p>
+        <p className="mt-2 flex gap-3 font-mono text-xs text-muted-foreground">
+          <span className="shrink-0 text-signal">currently</span>
+          <span>{profile.currently}</span>
+        </p>
+        <h1 className="mt-5 font-serif text-[2.1rem] leading-[1.05] tracking-tight text-balance sm:text-5xl">
           {profile.title}
         </h1>
         <p className="mt-6 text-lg leading-relaxed text-foreground/90">
