@@ -3,7 +3,7 @@ import type { ReactNode } from "react"
 
 import { AskPrompt } from "@/components/agent/ask-triggers"
 import { BackgroundLayer } from "@/components/background/background-layer"
-import { askExamples, profile } from "@/lib/content"
+import { askExamples, education, profile } from "@/lib/content"
 import { cn } from "@/lib/utils"
 
 import { socials } from "./shared"
@@ -85,7 +85,10 @@ export function HomeHeader() {
         <p className="text-xl font-semibold tracking-tight text-foreground sm:text-2xl">
           {profile.name}
         </p>
-        <p className="mt-2 flex gap-3 font-mono text-xs text-muted-foreground">
+        <p className="mt-1 font-mono text-xs text-muted-foreground">
+          {education.school}, {education.degree.replace("Bachelor of Science", "BS")}
+        </p>
+        <p className="mt-1 flex gap-3 font-mono text-xs text-muted-foreground">
           <span className="shrink-0 text-signal">currently</span>
           <span>{profile.currently}</span>
         </p>
