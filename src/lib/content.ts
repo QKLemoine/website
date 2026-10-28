@@ -15,7 +15,7 @@ export const profile = {
     "Open to internships and new-grad roles in ML and software engineering.",
   /** Shown in the hero after "Currently:". Keep it to one line. */
   currently:
-    "AI/Clinical Data Intern at FDNA, building ML models for genetic-disease diagnosis.",
+    "AI/Clinical Data Intern at FDNA, supporting the data science team behind Face2Gene.",
 }
 
 /** Headline numbers for the stats tile. Each one comes from the résumé. */
@@ -46,7 +46,7 @@ export const askExamples = [
 ]
 
 export const about = [
-  "I'm a Computer Science student at Georgia Tech (Intelligence and Theory threads), currently working as an AI/Clinical Data Intern at FDNA, where I help build machine learning models that support genetic-disease diagnosis for geneticists in 130+ countries — cleaning and preparing real-world clinical data spanning 100,000+ patients and helping evaluate model performance across disease categories.",
+  "I'm a Computer Science student at Georgia Tech (Intelligence and Theory threads) and an AI/Clinical Data Intern at FDNA, where I support the data science team behind Face2Gene, an AI clinical decision-support tool used by geneticists in 130+ countries. I clean and prepare real-world clinical data, help evaluate models across disease categories to guide improvements, and help build preprocessing pipelines for clinical video research, with automated quality checks, standardized formats and privacy-safe data handling.",
   "Outside of that, I do research through two Georgia Tech programs. With Big Data Big Impact, I built an LSTM-based flood and drought prediction model covering Asia that reached 85% accuracy on historical flood events. With The Robot Collective VIP, I work on real-time perception and state estimation for multi-robot systems, fusing YOLO-based vision, LiDAR, and IMU data under real-time latency constraints.",
   "My background started in hands-on fabrication — I led machining for my FRC robotics team through back-to-back World Championship appearances — and that first-principles instinct carries into how I build software: modular, benchmarked, and rebuilt from scratch when it helps me understand it better. I'm fluent in English, French, and Dutch (native).",
 ]
@@ -334,10 +334,10 @@ export const experience: ExperienceEntry[] = [
     location: "Atlanta, GA",
     dates: "Aug. 2026 – Present",
     bullets: [
-      "Support development of machine learning models used by geneticists across 130+ countries to aid diagnosis of genetic diseases.",
-      "Work with real-world clinical datasets spanning 100,000+ patients and thousands of distinct disease phenotypes, performing data cleaning, feature preparation, and quality checks across multi-parameter patient records.",
-      "Contribute to model evaluation, assessing performance across diverse disease categories to help guide model improvements.",
-      "Collaborate with data scientists and clinical experts to prepare datasets and validate model outputs for a diagnostic tool used in global clinical settings.",
+      "Support the data science team behind Face2Gene, an AI clinical decision-support tool used by geneticists in 130+ countries.",
+      "Work with real-world clinical datasets, handling data cleaning, feature preparation and quality checks.",
+      "Contribute to model evaluation across disease categories to help guide model improvements.",
+      "Help build preprocessing pipelines for clinical video research, including automated quality checks, standardized formats and privacy-safe data handling.",
     ],
   },
   {
