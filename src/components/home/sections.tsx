@@ -1,7 +1,8 @@
 import { ArrowUpRight, ChevronDown } from "lucide-react";
 import type { ReactNode } from "react";
 
-import { Reveal } from "@/components/motion/reveal"
+import { Reveal } from "@/components/motion/reveal";
+import { Button } from "@/components/ui/button";
 import { OffTheClock } from "@/components/off-the-clock/off-the-clock";
 import {
   about,
@@ -279,21 +280,26 @@ export function HomeSections() {
       </Section>
 
       <Section id="contact" label="Contact">
-        <p className="max-w-[22ch] font-serif type-display text-balance">
-          {profile.availability}
-        </p>
-        <ul className="mt-8 flex flex-wrap gap-x-8 gap-y-2 type-lead">
-          {socials.map(({ label, href }) => (
+        <p className="max-w-measure type-lead">{profile.availability}</p>
+        {/* Email is the one primary action; the profiles are secondary. */}
+        <ul className="mt-6 flex flex-wrap gap-3">
+          {[...socials].reverse().map(({ label, href, icon: Icon }) => (
             <li key={label}>
-              <a
-                href={href}
-                target={href.startsWith("mailto:") ? undefined : "_blank"}
-                rel="noreferrer"
-                className="inline-flex items-center gap-1 underline decoration-primary decoration-2 underline-offset-[6px] outline-none hover:text-primary focus-visible:text-primary"
+              <Button
+                size="lg"
+                variant={label === "Email" ? "default" : "outline"}
+                nativeButton={false}
+                render={
+                  <a
+                    href={href}
+                    target={href.startsWith("mailto:") ? undefined : "_blank"}
+                    rel="noreferrer"
+                  />
+                }
               >
+                <Icon aria-hidden className="size-4" />
                 {label === "Email" ? profile.email : label}
-                <ArrowUpRight aria-hidden className="size-4" />
-              </a>
+              </Button>
             </li>
           ))}
         </ul>
