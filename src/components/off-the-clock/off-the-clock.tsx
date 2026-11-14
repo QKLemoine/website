@@ -113,8 +113,8 @@ export function OffTheClock({
   const interests = getInterests()
 
   return (
-    <div className="space-y-10">
-      <div className="grid gap-x-8 gap-y-10 lg:grid-cols-2">
+    <div className="space-y-block">
+      <div className="grid gap-x-8 gap-y-block lg:grid-cols-2">
         <div>
           <h3 className={headingClassName}>Travel</h3>
           <div className="mt-3">
@@ -178,7 +178,7 @@ export function OffTheClock({
 
       <ul
         className={cn(
-          "grid gap-x-8 gap-y-10 border-t border-border pt-8 sm:grid-cols-2",
+          "grid gap-x-8 gap-y-block border-t border-border pt-block sm:grid-cols-2",
           // One column per card, so a short row fills the width evenly.
           interests.length >= 4 ? "lg:grid-cols-4" : "lg:grid-cols-3",
           interestsClassName

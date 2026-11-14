@@ -33,33 +33,26 @@ function Mark({ children }: { children: ReactNode }) {
   );
 }
 
-/** A numbered section: its number and label in the left rail, content right. */
+/**
+ * A page section: a serif heading under a hairline, then its content. Every
+ * section starts at the same left edge and is the same distance from the
+ * one before it.
+ */
 function Section({
   id,
-  number,
   label,
   children,
 }: {
   id: string;
-  number: number;
   label: string;
   children: ReactNode;
 }) {
   return (
-    <section
-      id={id}
-      className="grid scroll-mt-14 gap-x-8 gap-y-6 border-t border-foreground py-8 lg:grid-cols-12 lg:py-12"
-    >
-      <h2 className="flex items-baseline gap-3 lg:col-span-2 lg:flex-col lg:gap-1">
-        <span
-          aria-hidden
-          className="font-serif type-heading text-muted-foreground"
-        >
-          {String(number).padStart(2, "0")}
-        </span>
-        <span className="type-small font-medium">{label}</span>
+    <section id={id} className="scroll-mt-14 pt-section">
+      <h2 className="border-t border-foreground/25 pt-6 font-serif type-heading">
+        {label}
       </h2>
-      <div className="min-w-0 lg:col-span-10">{children}</div>
+      <div className="mt-10">{children}</div>
     </section>
   );
 }
@@ -189,7 +182,7 @@ function ProjectEntry({
   );
 }
 
-/** Everything under the masthead: the numbered sections. */
+/** Everything under the hero: the page's five sections. */
 export function HomeSections() {
   const layouts: EntryLayout[] = projects.map((project, index) =>
     index === 0 ? "wide" : hasPair(project) ? "pair" : "half",
@@ -202,8 +195,8 @@ export function HomeSections() {
 
   return (
     <>
-      <Section id="projects" number={1} label="Selected work">
-        <div className="grid gap-x-8 sm:grid-cols-2">
+      <Section id="projects" label="Selected work">
+        <div className="-mb-14 grid gap-x-8 sm:grid-cols-2">
           {projects.map((project, index) => (
             <ProjectEntry
               key={project.title}
@@ -214,8 +207,8 @@ export function HomeSections() {
         </div>
       </Section>
 
-      <Section id="about" number={2} label="About">
-        <div className="gap-8 space-y-4 type-body md:columns-2">
+      <Section id="about" label="About">
+        <div className="gap-8 space-y-4 type-body lg:columns-2">
           {about.map((paragraph) => (
             <p
               key={paragraph.slice(0, 24)}
@@ -229,7 +222,7 @@ export function HomeSections() {
             </p>
           ))}
         </div>
-        <dl className="mt-8 grid gap-x-8 gap-y-5 border-t border-border pt-5 type-small sm:grid-cols-2 lg:grid-cols-4">
+        <dl className="mt-block grid gap-x-8 gap-y-6 border-t border-border pt-6 type-small sm:grid-cols-2 lg:grid-cols-4">
           {skills.map((group) => (
             <div key={group.label}>
               <dt className={LABEL}>{group.label}</dt>
@@ -239,21 +232,21 @@ export function HomeSections() {
         </dl>
       </Section>
 
-      <Section id="experience" number={3} label="Experience">
+      <Section id="experience" label="Experience">
         <ol className="divide-y divide-border">
           {experience.map((entry) => (
             <li
               key={`${entry.org}-${entry.dates}`}
-              className="grid gap-x-8 gap-y-1 py-4 first:pt-0 last:pb-0 md:grid-cols-10"
+              className="grid gap-x-8 gap-y-1 py-5 first:pt-0 last:pb-0 md:grid-cols-12"
             >
               <p className="type-small text-signal tabular-nums md:col-span-2">
                 {entry.dates}
               </p>
-              <div className="md:col-span-3">
+              <div className="md:col-span-4">
                 <h3 className="font-semibold">{entry.role}</h3>
                 <p className="type-small text-muted-foreground">{entry.org}</p>
               </div>
-              <p className="type-body text-muted-foreground md:col-span-5">
+              <p className="type-body text-muted-foreground md:col-span-6">
                 {entry.bullets[0]}
               </p>
             </li>
@@ -261,16 +254,11 @@ export function HomeSections() {
         </ol>
       </Section>
 
-      <Section id="off-the-clock" number={4} label="Off the clock">
-        <OffTheClock
-          headingClassName="type-title font-semibold"
-          // Reaches back across the numbered rail (two of the twelve columns
-          // plus their gaps), so the cards centre on the page, not the column.
-          interestsClassName="lg:-ml-[calc(20%+0.4rem)]"
-        />
+      <Section id="off-the-clock" label="Off the clock">
+        <OffTheClock headingClassName="type-title font-semibold" />
       </Section>
 
-      <Section id="contact" number={5} label="Contact">
+      <Section id="contact" label="Contact">
         <p className="max-w-[22ch] font-serif type-display text-balance">
           {profile.availability}
         </p>
