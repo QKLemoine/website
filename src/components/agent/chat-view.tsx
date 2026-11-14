@@ -56,7 +56,7 @@ const FAILURE: Record<FailureReason, string> = {
 }
 
 const chipClass =
-  "shrink-0 rounded-full border border-border bg-transparent px-3 py-1 type-caption text-foreground outline-none transition-colors hover:border-ring hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring disabled:opacity-50"
+  "shrink-0 rounded-sm border border-border bg-transparent px-3 py-1 type-caption text-foreground outline-none transition-colors hover:border-ring hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring disabled:opacity-50"
 
 export function ChatView({
   inputRef,
@@ -331,7 +331,7 @@ export function ChatView({
               type="submit"
               aria-label="Send"
               disabled={!value.trim()}
-              className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-primary text-primary-foreground outline-none transition-opacity hover:opacity-90 focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background disabled:opacity-40"
+              className="flex size-8 shrink-0 items-center justify-center rounded-sm bg-foreground text-background outline-none transition-opacity hover:opacity-90 focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background disabled:bg-muted disabled:text-muted-foreground disabled:opacity-100"
             >
               <ArrowUp className="size-4" />
             </button>

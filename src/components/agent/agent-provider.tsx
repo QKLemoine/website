@@ -94,11 +94,11 @@ function Launcher() {
       onClick={() => setOpen(true)}
       onPointerEnter={preload}
       onFocus={preload}
-      className="fixed right-4 bottom-4 z-40 flex h-12 items-center gap-2 rounded-full bg-primary px-4 type-small font-medium text-primary-foreground shadow-lg outline-none transition-transform hover:-translate-y-0.5 focus-visible:ring-3 focus-visible:ring-ring/50 sm:right-5 sm:bottom-5"
+      className="fixed right-4 bottom-4 z-40 flex h-11 items-center gap-2 rounded-sm bg-foreground px-4 type-small font-medium text-background outline-none transition-opacity hover:opacity-90 focus-visible:ring-3 focus-visible:ring-ring/60 sm:right-5 sm:bottom-5"
     >
       <MessageCircle className="size-4.5" />
       Ask me
-      <kbd className="hidden rounded border border-primary-foreground/25 px-1.5 py-0.5 font-sans type-caption leading-none text-primary-foreground/70 sm:inline">
+      <kbd className="hidden rounded-sm border border-background/25 px-1.5 py-0.5 type-label text-background/70 sm:inline">
         {shortcut}
       </kbd>
     </button>

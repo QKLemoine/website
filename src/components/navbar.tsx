@@ -27,15 +27,15 @@ export function Navbar({ width = "max-w-5xl" }: { width?: string }) {
   const [open, setOpen] = useState(false)
 
   return (
-    <header className="sticky top-0 z-40 w-full border-b border-border/60 bg-background/85 backdrop-blur supports-backdrop-filter:bg-background/60">
+    <header className="sticky top-0 z-40 w-full border-b border-border bg-background">
       <div
         className={`mx-auto flex h-14 ${width} items-center justify-between px-gutter`}
       >
-        <a href="#top" className="type-body font-semibold tracking-tight">
+        <a href="#top" className="type-body font-bold tracking-tight">
           {profile.name}
         </a>
 
-        <nav className="hidden items-center gap-6 type-body text-muted-foreground md:flex lg:gap-8">
+        <nav className="hidden items-center gap-6 type-small text-muted-foreground md:flex lg:gap-8">
           {links.map((link) => (
             <a
               key={link.href}
