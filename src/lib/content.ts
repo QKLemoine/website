@@ -72,7 +72,7 @@ export const education = {
 export type SkillGroup = { label: string; items: string[] }
 
 export const skills: SkillGroup[] = [
-  { label: "Languages", items: ["Python", "Java", "C", "SQL"] },
+  { label: "Programming Languages", items: ["Python", "Java", "C", "SQL"] },
   {
     label: "Machine Learning",
     items: [
