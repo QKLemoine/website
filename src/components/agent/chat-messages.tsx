@@ -64,13 +64,13 @@ export const Message = memo(function Message({ entry }: { entry: Entry }) {
   }
   if (entry.kind === "output") {
     return (
-      <div className="max-w-[94%] leading-relaxed">
+      <div className="max-w-[94%]">
         <Lines lines={entry.lines} />
       </div>
     )
   }
   return (
-    <div className="max-w-[94%] leading-relaxed break-words whitespace-pre-wrap">
+    <div className="max-w-[94%] break-words whitespace-pre-wrap">
       {entry.text ? (
         plain(entry.text)
       ) : (

@@ -21,7 +21,7 @@ export function PhotoFill({
     return (
       <span
         className={cn(
-          "absolute inset-0 flex flex-col justify-end overflow-hidden border border-dashed border-foreground/25 bg-muted/60 p-1.5 text-left font-mono text-[10px] leading-tight text-muted-foreground",
+          "absolute inset-0 flex flex-col justify-end overflow-hidden border border-dashed border-foreground/25 bg-muted/60 p-1.5 text-left type-caption text-muted-foreground",
           className
         )}
       >

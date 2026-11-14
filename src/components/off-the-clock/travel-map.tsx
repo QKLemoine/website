@@ -146,7 +146,7 @@ export function TravelMap({
 
   return (
     <div>
-      <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2 text-xs text-muted-foreground">
+      <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2 type-caption text-muted-foreground">
         <p className="flex items-center gap-4">
           <span className="flex items-center gap-1.5">
             <Marker kind="lived" /> Lived
@@ -253,15 +253,15 @@ export function TravelMap({
         <div aria-live="polite" className="mt-3 space-y-1.5">
           <p className="flex flex-wrap items-baseline gap-x-2">
             <span className="font-semibold">{place.name}</span>
-            <span className="text-xs text-muted-foreground">
+            <span className="type-caption text-muted-foreground">
               {place.country === place.name ? "" : place.country}
             </span>
             {place.date && (
-              <span className="text-xs text-signal">{place.date}</span>
+              <span className="type-caption text-signal">{place.date}</span>
             )}
           </p>
           {place.note && (
-            <p className="text-sm leading-relaxed text-muted-foreground">
+            <p className="type-small text-muted-foreground">
               {place.note}
             </p>
           )}

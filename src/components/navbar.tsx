@@ -31,11 +31,11 @@ export function Navbar({ width = "max-w-5xl" }: { width?: string }) {
       <div
         className={`mx-auto flex h-14 ${width} items-center justify-between px-6`}
       >
-        <a href="#top" className="text-base font-semibold tracking-tight">
+        <a href="#top" className="type-body font-semibold tracking-tight">
           {profile.name}
         </a>
 
-        <nav className="hidden items-center gap-6 text-base text-muted-foreground md:flex lg:gap-8">
+        <nav className="hidden items-center gap-6 type-body text-muted-foreground md:flex lg:gap-8">
           {links.map((link) => (
             <a
               key={link.href}
@@ -67,7 +67,7 @@ export function Navbar({ width = "max-w-5xl" }: { width?: string }) {
                     render={
                       <a
                         href={link.href}
-                        className="rounded-md px-2 py-2.5 text-base font-medium text-foreground hover:bg-muted"
+                        className="rounded-md px-2 py-2.5 type-body font-medium text-foreground hover:bg-muted"
                       />
                     }
                   >

@@ -21,7 +21,7 @@ function PlaceList() {
   const noted = places.filter((place) => place.note)
 
   return (
-    <div className="space-y-3 text-sm">
+    <div className="space-y-3 type-small">
       <dl className="grid grid-cols-[auto_1fr] gap-x-4 gap-y-1.5">
         {lived.length > 0 && (
           <>
@@ -52,7 +52,7 @@ function PlaceList() {
             <li key={place.name}>
               <span className="font-medium">{place.name}</span>
               {place.date && (
-                <span className="text-xs text-signal"> {place.date}</span>
+                <span className="type-caption text-signal"> {place.date}</span>
               )}
               <span className="block text-muted-foreground">{place.note}</span>
             </li>
@@ -89,7 +89,7 @@ function RideHeatmap({
         ))}
       </svg>
       {cycling.sample && (
-        <p className="absolute top-2 left-2 rounded-sm bg-background/80 px-1.5 py-0.5 font-mono text-[10px] text-muted-foreground">
+        <p className="absolute top-2 left-2 rounded-sm bg-background/80 px-1.5 py-0.5 type-caption text-muted-foreground">
           Sample routes, not real rides
         </p>
       )}
@@ -102,7 +102,7 @@ function RideHeatmap({
  * style wraps it in its own. `headingClassName` styles the block titles.
  */
 export function OffTheClock({
-  headingClassName = "text-lg font-semibold",
+  headingClassName = "type-lead font-semibold",
   interestsClassName,
 }: {
   headingClassName?: string
@@ -128,12 +128,12 @@ export function OffTheClock({
           {/* Always open on phones, where the dots are small; tucked away on
               wider screens. Either way it works without JavaScript. */}
           <div className="mt-4 border-t border-border pt-3 lg:hidden">
-            <p className="mb-3 text-sm text-muted-foreground">
+            <p className="mb-3 type-small text-muted-foreground">
               {places.length} of the many places I&apos;ve been
             </p>
             <PlaceList />
           </div>
-          <details className="mt-3 hidden text-sm lg:block">
+          <details className="mt-3 hidden type-small lg:block">
             <summary className="cursor-pointer rounded-sm text-muted-foreground underline-offset-4 outline-none hover:text-foreground hover:underline focus-visible:ring-3 focus-visible:ring-ring/50">
               {places.length} of the many places I&apos;ve been, as a list
             </summary>
@@ -152,8 +152,8 @@ export function OffTheClock({
           <dl className="mt-3 grid grid-cols-3 gap-4">
             {cycling.stats.map((stat) => (
               <div key={stat.label} className="flex flex-col-reverse justify-end">
-                <dt className="text-xs text-muted-foreground">{stat.label}</dt>
-                <dd className="text-xl font-semibold tracking-tight tabular-nums">
+                <dt className="type-caption text-muted-foreground">{stat.label}</dt>
+                <dd className="type-title font-semibold tabular-nums">
                   {stat.value}
                 </dd>
               </div>
@@ -169,7 +169,7 @@ export function OffTheClock({
               large
               className="shrink-0"
             />
-            <p className="text-sm leading-relaxed text-muted-foreground">
+            <p className="type-small text-muted-foreground">
               {cycling.caption}
             </p>
           </div>
@@ -192,7 +192,7 @@ export function OffTheClock({
               layout={index}
             />
             <h3 className={cn(headingClassName, "mt-3")}>{interest.title}</h3>
-            <ul className="mt-1.5 list-disc space-y-1 pl-4 text-sm leading-relaxed text-muted-foreground marker:text-primary">
+            <ul className="mt-1.5 list-disc space-y-1 pl-4 type-small text-muted-foreground marker:text-primary">
               {interest.bullets.map((bullet) => (
                 <li key={bullet}>{bullet}</li>
               ))}

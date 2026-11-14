@@ -109,11 +109,11 @@ export function ProjectVisual({
       role="img"
       aria-label={`Placeholder for figure ${figureNumber(project)}`}
       className={cn(
-        "flex aspect-16/10 flex-col justify-between gap-2 overflow-hidden border border-dashed border-foreground/25 bg-muted/60 p-3 text-xs leading-snug text-muted-foreground",
+        "flex aspect-16/10 flex-col justify-between gap-2 overflow-hidden border border-dashed border-foreground/25 bg-muted/60 p-3 type-caption text-muted-foreground",
         className
       )}
     >
-      <span className="font-mono">
+      <span className="font-medium">
         Placeholder, fig. {figureNumber(project)}
       </span>
       <span className="line-clamp-3 max-w-[40ch]">{project.figureBrief}</span>

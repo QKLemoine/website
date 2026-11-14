@@ -109,7 +109,7 @@ export function Gallery({
                 sizes="(min-width: 1024px) 360px, 50vw"
               />
               {photo.caption && !photo.missing && (
-                <span className="absolute inset-x-0 bottom-0 bg-black/65 px-1.5 py-1 text-left text-[11px] leading-tight text-white opacity-0 transition-opacity group-hover/cell:opacity-100 group-focus-visible/trigger:opacity-100">
+                <span className="absolute inset-x-0 bottom-0 bg-black/65 px-1.5 py-1 text-left type-caption text-white opacity-0 transition-opacity group-hover/cell:opacity-100 group-focus-visible/trigger:opacity-100">
                   {photo.caption}
                 </span>
               )}
@@ -145,7 +145,7 @@ export function Gallery({
       >
         <div className="p-4 sm:p-5">
           <div className="flex items-center justify-between gap-4">
-            <h4 className="text-lg font-semibold">{title}</h4>
+            <h4 className="type-lead font-semibold">{title}</h4>
             <button
               type="button"
               onClick={() => dialogRef.current?.close()}
@@ -173,11 +173,11 @@ export function Gallery({
                   <PhotoFill
                     photo={photo}
                     sizes="(min-width: 1024px) 620px, 100vw"
-                    className="text-xs"
+                    className="type-caption"
                   />
                 </div>
                 {photo.caption && (
-                  <figcaption className="mt-1.5 text-sm text-muted-foreground">
+                  <figcaption className="mt-1.5 type-small text-muted-foreground">
                     {photo.caption}
                   </figcaption>
                 )}

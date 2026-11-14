@@ -56,7 +56,7 @@ const FAILURE: Record<FailureReason, string> = {
 }
 
 const chipClass =
-  "shrink-0 rounded-full border border-border bg-transparent px-3 py-1 text-xs text-foreground outline-none transition-colors hover:border-ring hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring disabled:opacity-50"
+  "shrink-0 rounded-full border border-border bg-transparent px-3 py-1 type-caption text-foreground outline-none transition-colors hover:border-ring hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring disabled:opacity-50"
 
 export function ChatView({
   inputRef,
@@ -222,7 +222,7 @@ export function ChatView({
   }
 
   return (
-    <div className="flex min-h-0 flex-1 flex-col text-sm">
+    <div className="flex min-h-0 flex-1 flex-col type-small">
       <div
         ref={scrollRef}
         onScroll={(event) => {
@@ -315,7 +315,7 @@ export function ChatView({
             enterKeyHint="send"
             maxLength={MAX_INPUT_CHARS}
             // 16px on phones stops iOS from zooming the page on focus.
-            className="h-11 min-w-0 flex-1 bg-transparent text-base outline-none placeholder:text-muted-foreground sm:text-sm"
+            className="h-11 min-w-0 flex-1 bg-transparent type-body outline-none placeholder:text-muted-foreground sm:type-small"
           />
           {busy ? (
             <button

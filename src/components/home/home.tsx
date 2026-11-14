@@ -10,7 +10,7 @@ export function Home() {
     // Clips the header's full-bleed background at the viewport edge.
     <div className="overflow-x-clip">
       <div className={`mx-auto ${HOME_WIDTH} px-6`}>
-        <div className="pb-12 text-[15px] leading-relaxed sm:text-base">
+        <div className="pb-12">
           <HomeHeader />
         </div>
         <HomeSections />

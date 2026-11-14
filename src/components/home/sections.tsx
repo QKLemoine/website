@@ -21,8 +21,8 @@ import {
   socials,
 } from "./shared"
 
-const SMALL_CAPS = "[font-variant-caps:all-small-caps] tracking-[0.08em]"
-const DISPLAY = "font-display font-bold tracking-tight [font-stretch:75%]"
+/** Small quiet labels: field names, figure numbers, list headings. */
+const LABEL = "type-caption font-medium text-muted-foreground"
 
 /** The accent used like a highlighter pen: a tint behind a few key words. */
 function Mark({ children }: { children: ReactNode }) {
@@ -53,11 +53,11 @@ function Section({
       <h2 className="flex items-baseline gap-3 lg:col-span-2 lg:flex-col lg:gap-1">
         <span
           aria-hidden
-          className={cn(DISPLAY, "text-4xl text-muted-foreground/60 lg:text-5xl")}
+          className="font-serif type-heading text-muted-foreground"
         >
           {String(number).padStart(2, "0")}
         </span>
-        <span className={cn(SMALL_CAPS, "text-lg lg:text-base")}>{label}</span>
+        <span className="type-small font-medium">{label}</span>
       </h2>
       <div className="min-w-0 lg:col-span-10">{children}</div>
     </section>
@@ -82,16 +82,12 @@ function ProjectEntry({
   const heading = (
     <>
       <h3
-        className={cn(
-          DISPLAY,
-          "leading-none text-balance",
-          layout === "lead" ? "text-4xl sm:text-5xl" : "text-3xl"
-        )}
+        className="type-title font-semibold text-balance"
       >
         {project.title}
       </h3>
       {project.outcome && (
-        <p className="mt-3 text-base leading-relaxed">
+        <p className="mt-3 type-body">
           <Mark>{project.outcome.metric}</Mark> {project.outcome.label}.
         </p>
       )}
@@ -99,14 +95,14 @@ function ProjectEntry({
   )
   const body = (
     <>
-      <p className="text-base leading-relaxed text-muted-foreground">
+      <p className="type-body text-muted-foreground">
         {project.summary}
       </p>
-      <p className={cn(SMALL_CAPS, "mt-3 text-sm text-primary")}>
+      <p className={cn(LABEL, "mt-3")}>
         {project.tech.join(" / ")}
       </p>
       {project.links && project.links.length > 0 && (
-        <ul className="mt-2 flex flex-wrap gap-x-5 gap-y-1 text-sm">
+        <ul className="mt-2 flex flex-wrap gap-x-5 gap-y-1 type-small">
           {project.links.map((link) => (
             <li key={link.href}>
               <a
@@ -123,11 +119,11 @@ function ProjectEntry({
         </ul>
       )}
       <details className="group/details mt-3 border-t border-border pt-2">
-        <summary className="cursor-pointer list-none rounded-sm text-sm text-muted-foreground underline-offset-4 outline-none hover:text-foreground hover:underline focus-visible:ring-3 focus-visible:ring-ring/50 [&::-webkit-details-marker]:hidden">
+        <summary className="cursor-pointer list-none rounded-sm type-small text-muted-foreground underline-offset-4 outline-none hover:text-foreground hover:underline focus-visible:ring-3 focus-visible:ring-ring/50 [&::-webkit-details-marker]:hidden">
           <span className="group-open/details:hidden">Read the write-up</span>
           <span className="hidden group-open/details:inline">Close</span>
         </summary>
-        <p className="mt-2 text-[15px] leading-relaxed text-foreground/90">
+        <p className="mt-2 type-body text-foreground/90">
           {project.description}
         </p>
       </details>
@@ -154,9 +150,11 @@ function ProjectEntry({
             : "(min-width: 640px) 440px, 100vw"
         }
         figureClassName={cn(layout === "lead" && "lg:col-span-6")}
-        captionClassName="mt-2 text-sm text-muted-foreground"
+        captionClassName="mt-2 type-caption text-muted-foreground"
         label={(text) => (
-          <span className={cn(SMALL_CAPS, "text-foreground")}>{text}</span>
+          <span className="font-medium text-foreground tabular-nums">
+            {text}
+          </span>
         )}
       />
       {layout === "pair" ? (
@@ -200,7 +198,7 @@ export function HomeSections() {
       </Section>
 
       <Section id="about" number={2} label="About">
-        <div className="gap-8 space-y-4 text-[15px] leading-relaxed md:columns-2">
+        <div className="gap-8 space-y-4 type-body md:columns-2">
           {about.map((paragraph) => (
             <p key={paragraph.slice(0, 24)} className="break-inside-avoid-column">
               <Highlighted
@@ -211,13 +209,13 @@ export function HomeSections() {
             </p>
           ))}
         </div>
-        <dl className="mt-8 grid gap-x-8 gap-y-5 border-t border-border pt-5 text-sm sm:grid-cols-2 lg:grid-cols-4">
+        <dl className="mt-8 grid gap-x-8 gap-y-5 border-t border-border pt-5 type-small sm:grid-cols-2 lg:grid-cols-4">
           {skills.map((group) => (
             <div key={group.label}>
-              <dt className={cn(SMALL_CAPS, "text-muted-foreground")}>
+              <dt className={LABEL}>
                 {group.label}
               </dt>
-              <dd className="mt-1 leading-relaxed">{group.items.join(", ")}</dd>
+              <dd className="mt-1">{group.items.join(", ")}</dd>
             </div>
           ))}
         </dl>
@@ -230,19 +228,14 @@ export function HomeSections() {
               key={`${entry.org}-${entry.dates}`}
               className="grid gap-x-8 gap-y-1 py-4 first:pt-0 last:pb-0 md:grid-cols-10"
             >
-              <p
-                className={cn(
-                  SMALL_CAPS,
-                  "text-sm text-signal tabular-nums md:col-span-2"
-                )}
-              >
+              <p className="type-small text-signal tabular-nums md:col-span-2">
                 {entry.dates}
               </p>
               <div className="md:col-span-3">
                 <h3 className="font-semibold">{entry.role}</h3>
-                <p className="text-sm text-muted-foreground">{entry.org}</p>
+                <p className="type-small text-muted-foreground">{entry.org}</p>
               </div>
-              <p className="text-sm leading-relaxed text-muted-foreground md:col-span-5">
+              <p className="type-body text-muted-foreground md:col-span-5">
                 {entry.bullets[0]}
               </p>
             </li>
@@ -252,7 +245,7 @@ export function HomeSections() {
 
       <Section id="off-the-clock" number={4} label="Off the clock">
         <OffTheClock
-          headingClassName={cn(DISPLAY, "text-3xl leading-none")}
+          headingClassName="type-title font-semibold"
           // Reaches back across the numbered rail (two of the twelve columns
           // plus their gaps), so the cards centre on the page, not the column.
           interestsClassName="lg:-ml-[calc(20%+0.4rem)]"
@@ -261,14 +254,11 @@ export function HomeSections() {
 
       <Section id="contact" number={5} label="Contact">
         <p
-          className={cn(
-            DISPLAY,
-            "max-w-[22ch] text-4xl leading-[0.95] text-balance sm:text-6xl"
-          )}
+          className="max-w-[22ch] font-serif type-display text-balance"
         >
           {profile.availability}
         </p>
-        <ul className="mt-8 flex flex-wrap gap-x-8 gap-y-2 text-lg">
+        <ul className="mt-8 flex flex-wrap gap-x-8 gap-y-2 type-lead">
           {socials.map(({ label, href }) => (
             <li key={label}>
               <a

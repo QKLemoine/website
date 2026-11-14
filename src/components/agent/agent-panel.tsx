@@ -151,12 +151,12 @@ export default function AgentPanel({
           className="fixed inset-x-0 top-0 z-50 flex h-(--agent-height,100dvh) flex-col overflow-hidden bg-popover font-sans text-popover-foreground shadow-2xl outline-none transition duration-200 ease-out data-ending-style:translate-y-3 data-ending-style:opacity-0 data-starting-style:translate-y-3 data-starting-style:opacity-0 motion-reduce:transition-none sm:inset-auto sm:right-5 sm:bottom-5 sm:h-[min(36rem,calc(100dvh-6rem))] sm:w-[26rem] sm:rounded-2xl sm:border sm:border-border"
         >
           <header className="flex h-12 shrink-0 items-center justify-between border-b border-border pr-2 pl-4">
-            <Dialog.Title className="flex items-center gap-2 text-sm font-medium">
+            <Dialog.Title className="flex items-center gap-2 type-small font-medium">
               <MessageCircle className="size-4 text-muted-foreground" />
               Ask about {firstName}
             </Dialog.Title>
             <div className="flex items-center gap-1.5">
-              <kbd className="hidden rounded border border-border px-1.5 py-0.5 font-sans text-[11px] leading-none text-muted-foreground sm:inline">
+              <kbd className="hidden rounded border border-border px-1.5 py-0.5 font-sans type-caption leading-none text-muted-foreground sm:inline">
                 esc
               </kbd>
               <Dialog.Close

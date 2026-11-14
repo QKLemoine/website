@@ -10,9 +10,9 @@
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
   --font-heading: var(--font-sans);
-  /* Loaded by the home page only. */
+  /* Two typefaces: Geist for text, and this serif for display type only.
+     Geist Mono is reserved for keyboard shortcuts and code. */
   --font-serif: var(--font-stix), Georgia, serif;
-  --font-display: var(--font-archivo), var(--font-geist-sans), sans-serif;
   --color-ring: var(--ring);
   --color-input: var(--input);
   --color-border: var(--border);
@@ -160,6 +160,42 @@
   --print: #e4e8ef;
 
   --destructive: oklch(0.704 0.191 22.216);
+}
+
+/*
+ * The type scale as utilities. They are named type-* rather than text-* so
+ * the class merger (cn) never mistakes a size for a colour and drops it.
+ */
+@utility type-caption {
+  font-size: var(--text-caption);
+  line-height: var(--text-caption--line-height);
+}
+@utility type-small {
+  font-size: var(--text-small);
+  line-height: var(--text-small--line-height);
+}
+@utility type-body {
+  font-size: var(--text-body);
+  line-height: var(--text-body--line-height);
+}
+@utility type-lead {
+  font-size: var(--text-lead);
+  line-height: var(--text-lead--line-height);
+}
+@utility type-title {
+  font-size: var(--text-title);
+  line-height: var(--text-title--line-height);
+  letter-spacing: var(--text-title--letter-spacing);
+}
+@utility type-heading {
+  font-size: var(--text-heading);
+  line-height: var(--text-heading--line-height);
+  letter-spacing: var(--text-heading--letter-spacing);
+}
+@utility type-display {
+  font-size: var(--text-display);
+  line-height: var(--text-display--line-height);
+  letter-spacing: var(--text-display--letter-spacing);
 }
 
 @layer base {

@@ -30,7 +30,7 @@ function Row({
     >
       <div className="min-w-0">{children}</div>
       {note && (
-        <aside className="border-l border-border pl-4 text-sm leading-relaxed text-muted-foreground lg:border-l-0 lg:pl-0">
+        <aside className="border-l border-border pl-4 type-small text-muted-foreground lg:border-l-0 lg:pl-0">
           {note}
         </aside>
       )}
@@ -65,7 +65,7 @@ export function HomeHeader() {
                 />
               </div>
             </figure>
-            <ul className="space-y-1 font-mono text-xs">
+            <ul className="space-y-1 type-small">
               {socials.map(({ label, href }) => (
                 <li key={label}>
                   <a
@@ -82,20 +82,20 @@ export function HomeHeader() {
           </div>
         }
       >
-        <p className="text-xl font-semibold tracking-tight text-foreground sm:text-2xl">
+        <p className="type-title font-semibold text-foreground">
           {profile.name}
         </p>
-        <p className="mt-1 font-mono text-xs text-muted-foreground">
+        <p className="mt-1 type-small text-muted-foreground">
           {education.school}, {education.degree.replace("Bachelor of Science", "BS")}
         </p>
-        <p className="mt-1 flex gap-3 font-mono text-xs text-muted-foreground">
-          <span className="shrink-0 text-signal">currently</span>
+        <p className="mt-1 flex gap-2 type-small text-muted-foreground">
+          <span className="shrink-0 font-medium text-signal">Currently</span>
           <span>{profile.currently}</span>
         </p>
-        <h1 className="mt-5 font-serif text-[2.1rem] leading-[1.05] tracking-tight text-balance sm:text-5xl">
+        <h1 className="mt-6 font-serif type-display text-balance">
           {profile.title}
         </h1>
-        <p className="mt-6 text-lg leading-relaxed text-foreground/90">
+        <p className="mt-6 type-lead text-foreground/90">
           <span className="font-serif italic">Abstract.</span>{" "}
           {profile.pitch} {profile.availability}
         </p>
