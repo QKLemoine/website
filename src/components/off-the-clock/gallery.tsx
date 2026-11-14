@@ -105,7 +105,7 @@ export function Gallery({
             <PhotoFill
               photo={photo}
               sizes="(min-width: 1024px) 440px, 50vw"
-              className="transition-transform duration-(--duration-slow) group-hover/cell:scale-[1.03]"
+              className="transition-transform duration-(--duration-slow) group-hover/cell:scale-[1.03] motion-reduce:group-hover/cell:scale-100"
             />
             {photo.caption && !photo.missing && (
               // A small mono caption: shown on hover or keyboard focus, and

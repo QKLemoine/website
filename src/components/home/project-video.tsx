@@ -11,7 +11,7 @@ export const MEDIA_FRAME =
 
 /** Media eases up a touch while hovered: slow, small, transform only. */
 export const MEDIA_ZOOM =
-  "transition-transform duration-(--duration-slow) group-hover/media:scale-[1.02]"
+  "transition-transform duration-(--duration-slow) group-hover/media:scale-[1.02] motion-reduce:group-hover/media:scale-100"
 
 /**
  * A silent demo clip that rests on its poster. With a mouse it plays while

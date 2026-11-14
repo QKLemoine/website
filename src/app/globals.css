@@ -263,10 +263,11 @@
   }
 }
 
-/* Sections fade up a few pixels the first time they scroll into view. */
+/* Sections fade up a few pixels the first time they scroll into view:
+   slow and smooth, never bouncy. */
 [data-reveal="pending"] {
   opacity: 0;
-  transform: translateY(12px);
+  transform: translateY(16px);
 }
 [data-reveal="shown"] {
   transition:

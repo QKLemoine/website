@@ -157,7 +157,7 @@ export function OffTheClock({
                 <dt className="mt-1 type-label text-muted-foreground">
                   {stat.label}
                 </dt>
-                <dd className="type-title font-bold tabular-nums">
+                <dd className="type-lead font-bold whitespace-nowrap tabular-nums sm:type-title">
                   {stat.value}
                 </dd>
               </div>

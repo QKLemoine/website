@@ -40,7 +40,7 @@ export function Navbar({ width = "max-w-5xl" }: { width?: string }) {
             <a
               key={link.href}
               href={link.href}
-              className="decoration-primary decoration-2 underline-offset-8 transition-colors hover:text-foreground hover:underline"
+              className="inline-flex min-h-6 items-center decoration-primary decoration-2 underline-offset-8 transition-colors hover:text-foreground hover:underline"
             >
               {link.label}
             </a>
