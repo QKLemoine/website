@@ -7,7 +7,7 @@ import { profile, projects, type Project } from "@/lib/content"
 import { slugify } from "@/lib/terminal/filesystem"
 import { cn } from "@/lib/utils"
 
-import { MEDIA_FRAME, ProjectVideo } from "./project-video"
+import { MEDIA_FRAME, MEDIA_ZOOM, ProjectVideo } from "./project-video"
 
 export const socials = [
   { label: "GitHub", href: profile.github, icon: GitHubIcon },
@@ -44,11 +44,12 @@ export function ProjectImage({
   return (
     <div
       className={cn(
-        // Drawings sit on the card colour; photographs on the media frame.
+        // Drawings sit on the card colour with a hairline; photographs on
+        // the media frame.
         fill
-          ? "relative size-full overflow-hidden rounded-lg ring-1 ring-foreground/10"
+          ? "group/media relative size-full overflow-hidden rounded-sm"
           : MEDIA_FRAME,
-        drawing && "bg-card",
+        drawing && "bg-card ring-1 ring-border ring-inset",
         className
       )}
     >
@@ -60,11 +61,14 @@ export function ProjectImage({
         // GIFs skip the image optimizer so they keep animating.
         unoptimized={src.endsWith(".gif")}
         className={
-          drawing
-            ? // Multiply drops the white paper on a light page; on a dark one
-              // the drawing is inverted (keeping its hue) and screened instead.
-              "object-contain p-2 mix-blend-multiply dark:mix-blend-screen dark:invert dark:hue-rotate-180"
-            : "object-cover"
+          cn(
+            MEDIA_ZOOM,
+            drawing
+              ? // Multiply drops the white paper on a light page; on a dark
+                // one the drawing is inverted (keeping its hue) and screened.
+                "object-contain p-3 mix-blend-multiply dark:mix-blend-screen dark:invert dark:hue-rotate-180"
+              : "object-cover"
+          )
         }
       />
     </div>
@@ -111,7 +115,7 @@ export function ProjectVisual({
       role="img"
       aria-label={`Placeholder for figure ${figureNumber(project)}`}
       className={cn(
-        "flex aspect-video flex-col justify-between gap-2 overflow-hidden rounded-lg border border-dashed border-foreground/25 bg-muted/60 p-3 type-caption text-muted-foreground",
+        "flex aspect-video flex-col justify-between gap-2 overflow-hidden rounded-sm border border-dashed border-foreground/25 bg-muted/60 p-3 type-caption text-muted-foreground",
         className
       )}
     >
@@ -172,7 +176,7 @@ export function ProjectFigures({
             // Several stills share the one slot, side by side.
             <div
               className={cn(
-                "grid aspect-video gap-2",
+                "grid aspect-video gap-seam",
                 project.secondImage.images.length === 2
                   ? "grid-cols-2"
                   : "grid-cols-3"

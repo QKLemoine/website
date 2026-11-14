@@ -29,12 +29,10 @@ const LABEL = "type-label text-muted-foreground"
 const LINK =
   "inline-flex min-h-6 items-center gap-0.5 rounded-sm font-medium text-primary underline-offset-4 outline-none hover:underline focus-visible:ring-3 focus-visible:ring-ring/50"
 
-/** The accent used like a highlighter pen: a tint behind a few key words. */
+/** Key figures and phrases: set in the accent colour, no fill. */
 function Mark({ children }: { children: ReactNode }) {
   return (
-    <mark className="rounded-sm bg-primary/15 box-decoration-clone px-1 text-inherit dark:bg-primary/30">
-      {children}
-    </mark>
+    <mark className="bg-transparent font-semibold text-signal">{children}</mark>
   )
 }
 
@@ -67,15 +65,16 @@ function Section({
 type EntryLayout =
   /** One column of the two-column grid. */
   | "half"
-  /** Full width, with the text beside one figure. */
+  /** Full width: the figure runs edge to edge, the text below it. */
   | "wide"
-  /** Full width, with two figures side by side and the text under them. */
+  /** Full width, with two figures side by side and the text below them. */
   | "pair"
 
 /**
  * One project. Every project has the same parts in the same order: title,
  * figure with its caption, outcome, summary, then tags, links and the
- * write-up. A hairline above each one marks where it starts.
+ * write-up. A hairline above each one marks where it starts; the media is
+ * the largest thing in it.
  */
 function ProjectEntry({
   project,
@@ -91,11 +90,11 @@ function ProjectEntry({
     <ProjectFigures
       project={project}
       sizes={
-        layout === "wide"
-          ? "(min-width: 1024px) 650px, 100vw"
-          : "(min-width: 640px) 540px, 100vw"
+        layout === "half"
+          ? "(min-width: 1440px) 680px, (min-width: 640px) 50vw, 100vw"
+          : "(min-width: 1440px) 1360px, 100vw"
       }
-      captionClassName="mt-2 type-caption text-muted-foreground"
+      captionClassName="mt-3 type-caption text-muted-foreground"
       label={(text) => (
         <span className="mr-1 type-label text-foreground">{text}</span>
       )}
@@ -108,7 +107,9 @@ function ProjectEntry({
           <Mark>{project.outcome.metric}</Mark> {project.outcome.label}.
         </p>
       )}
-      <p className="type-body text-muted-foreground">{project.summary}</p>
+      <p className="max-w-measure type-body text-muted-foreground">
+        {project.summary}
+      </p>
     </div>
   )
   const meta = (
@@ -156,7 +157,7 @@ function ProjectEntry({
       </details>
     </div>
   )
-  const frame = "scroll-mt-20 border-t border-border pt-6 pb-14"
+  const frame = "scroll-mt-20 border-t border-border pt-6 pb-16"
 
   if (layout === "half") {
     return (
@@ -164,11 +165,11 @@ function ProjectEntry({
       // different lengths still leave the figures and text lined up.
       <article
         id={projectId(project)}
-        className={cn(frame, "row-span-3 grid grid-rows-subgrid gap-y-4")}
+        className={cn(frame, "row-span-3 grid grid-rows-subgrid gap-y-5")}
       >
         {title}
         <div>{figures}</div>
-        <div className="space-y-4">
+        <div className="space-y-5">
           {text}
           {meta}
         </div>
@@ -179,26 +180,21 @@ function ProjectEntry({
   return (
     <article
       id={projectId(project)}
-      className={cn(frame, "space-y-4 sm:col-span-2")}
+      className={cn(frame, "space-y-5 sm:col-span-2")}
     >
       {title}
-      {layout === "wide" ? (
-        <div className="grid gap-x-8 gap-y-4 lg:grid-cols-12">
-          <div className="lg:col-span-7">{figures}</div>
-          <div className="space-y-4 lg:col-span-5">
-            {text}
-            {meta}
-          </div>
-        </div>
-      ) : (
-        <>
-          <div className="grid gap-x-8 gap-y-4 sm:grid-cols-2">{figures}</div>
-          <div className="grid gap-x-8 gap-y-4 sm:grid-cols-2">
-            {text}
-            {meta}
-          </div>
-        </>
-      )}
+      <div
+        className={cn(
+          "grid gap-x-seam gap-y-5",
+          layout === "pair" && "sm:grid-cols-2"
+        )}
+      >
+        {figures}
+      </div>
+      <div className="grid gap-x-8 gap-y-5 lg:grid-cols-12">
+        <div className="lg:col-span-6">{text}</div>
+        <div className="lg:col-span-5 lg:col-start-8">{meta}</div>
+      </div>
     </article>
   )
 }
@@ -217,7 +213,7 @@ export function HomeSections() {
   return (
     <>
       <Section id="projects" label="Selected work">
-        <div className="-mb-14 grid gap-x-8 sm:grid-cols-2">
+        <div className="-mb-16 grid gap-x-6 sm:grid-cols-2">
           {projects.map((project, index) => (
             <ProjectEntry
               key={project.title}

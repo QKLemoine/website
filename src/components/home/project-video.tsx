@@ -7,7 +7,11 @@ import { cn } from "@/lib/utils"
 
 /** The frame every project figure sits in, so stills and clips match. */
 export const MEDIA_FRAME =
-  "relative aspect-video overflow-hidden rounded-lg bg-media ring-1 ring-foreground/10"
+  "group/media relative aspect-video overflow-hidden rounded-sm bg-media"
+
+/** Media eases up a touch while hovered: slow, small, transform only. */
+export const MEDIA_ZOOM =
+  "transition-transform duration-(--duration-slow) group-hover/media:scale-[1.02]"
 
 /**
  * A silent demo clip that rests on its poster. With a mouse it plays while
@@ -88,23 +92,23 @@ export function ProjectVideo({
         preload="none"
         onPlay={() => setPlaying(true)}
         onPause={() => setPlaying(false)}
-        className="size-full object-contain"
+        className={cn("size-full object-contain", MEDIA_ZOOM)}
       />
       <button
         type="button"
         onClick={toggle}
         aria-label={playing ? "Pause video" : "Play video"}
         className={cn(
-          "absolute bottom-3 left-3 flex h-8 items-center gap-1.5 rounded-full bg-black/70 pr-3 pl-2.5 type-caption font-medium text-white outline-none transition-opacity hover:bg-black/85 focus-visible:opacity-100 focus-visible:ring-3 focus-visible:ring-ring/70",
+          "absolute bottom-4 left-4 flex h-8 items-center gap-2 rounded-sm bg-black/70 px-3 type-label text-white outline-none transition-opacity hover:bg-black/90 focus-visible:opacity-100 focus-visible:ring-3 focus-visible:ring-ring/70",
           // Always visible while paused, so touch screens have an obvious
           // way to start it; out of the way while it plays.
           playing && "opacity-0 group-hover/video:opacity-100"
         )}
       >
         {playing ? (
-          <Pause aria-hidden className="size-3.5" />
+          <Pause aria-hidden className="size-3" />
         ) : (
-          <Play aria-hidden className="size-3.5" />
+          <Play aria-hidden className="size-3" />
         )}
         {playing ? "Pause" : "Play"}
       </button>
