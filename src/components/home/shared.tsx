@@ -7,7 +7,7 @@ import { profile, projects, type Project } from "@/lib/content"
 import { slugify } from "@/lib/terminal/filesystem"
 import { cn } from "@/lib/utils"
 
-import { ProjectVideo } from "./project-video"
+import { MEDIA_FRAME, ProjectVideo } from "./project-video"
 
 export const socials = [
   { label: "GitHub", href: profile.github, icon: GitHubIcon },
@@ -44,9 +44,11 @@ export function ProjectImage({
   return (
     <div
       className={cn(
-        "relative overflow-hidden",
-        fill ? "size-full" : "aspect-16/10",
-        drawing && "bg-card ring-1 ring-foreground/10",
+        // Drawings sit on the card colour; photographs on the media frame.
+        fill
+          ? "relative size-full overflow-hidden rounded-lg ring-1 ring-foreground/10"
+          : MEDIA_FRAME,
+        drawing && "bg-card",
         className
       )}
     >
@@ -109,7 +111,7 @@ export function ProjectVisual({
       role="img"
       aria-label={`Placeholder for figure ${figureNumber(project)}`}
       className={cn(
-        "flex aspect-16/10 flex-col justify-between gap-2 overflow-hidden border border-dashed border-foreground/25 bg-muted/60 p-3 type-caption text-muted-foreground",
+        "flex aspect-video flex-col justify-between gap-2 overflow-hidden rounded-lg border border-dashed border-foreground/25 bg-muted/60 p-3 type-caption text-muted-foreground",
         className
       )}
     >
@@ -170,7 +172,7 @@ export function ProjectFigures({
             // Several stills share the one slot, side by side.
             <div
               className={cn(
-                "grid aspect-16/10 gap-2",
+                "grid aspect-video gap-2",
                 project.secondImage.images.length === 2
                   ? "grid-cols-2"
                   : "grid-cols-3"

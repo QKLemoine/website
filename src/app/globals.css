@@ -31,6 +31,7 @@
   --color-card: var(--card);
   --color-signal: var(--signal);
   --color-print: var(--print);
+  --color-media: var(--media);
 }
 
 /*
@@ -117,6 +118,9 @@
   --signal: #8a5a00;
   /* The thin print border around interest photos. */
   --print: #ffffff;
+  /* Behind project clips, which are dark recordings: a deep navy in both
+     themes, so a letterboxed clip reads as one framed object. */
+  --media: #0e1626;
 
   --radius: 0.5rem;
   --duration-fast: 150ms;
@@ -158,6 +162,7 @@
   --signal: #e0a84b;
   /* Off-white rather than pure white, so prints don't glare on navy. */
   --print: #e4e8ef;
+  --media: #070c16;
 
   --destructive: oklch(0.704 0.191 22.216);
 }
