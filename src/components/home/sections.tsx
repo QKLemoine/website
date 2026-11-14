@@ -27,7 +27,7 @@ const DISPLAY = "font-display font-bold tracking-tight [font-stretch:75%]"
 /** The accent used like a highlighter pen: a tint behind a few key words. */
 function Mark({ children }: { children: ReactNode }) {
   return (
-    <mark className="rounded-[2px] bg-primary/15 box-decoration-clone px-1 text-inherit dark:bg-primary/30">
+    <mark className="rounded-sm bg-primary/15 box-decoration-clone px-1 text-inherit dark:bg-primary/30">
       {children}
     </mark>
   )

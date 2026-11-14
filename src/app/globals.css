@@ -31,13 +31,67 @@
   --color-card: var(--card);
   --color-signal: var(--signal);
   --color-print: var(--print);
-  --radius-sm: calc(var(--radius) * 0.6);
-  --radius-md: calc(var(--radius) * 0.8);
-  --radius-lg: var(--radius);
-  --radius-xl: calc(var(--radius) * 1.4);
-  --radius-2xl: calc(var(--radius) * 1.8);
-  --radius-3xl: calc(var(--radius) * 2.2);
-  --radius-4xl: calc(var(--radius) * 2.6);
+}
+
+/*
+ * Design tokens. Everything on the site is built from these scales; a
+ * component that needs a size, gap, corner, shadow or timing picks one here
+ * rather than inventing a value.
+ */
+@theme {
+  /* Type: six steps for text and one fluid display size. Each carries its
+     own line height, tighter as the type gets larger. */
+  --text-caption: 0.8125rem;
+  --text-caption--line-height: 1.45;
+  --text-small: 0.875rem;
+  --text-small--line-height: 1.55;
+  --text-body: 1rem;
+  --text-body--line-height: 1.65;
+  --text-lead: 1.125rem;
+  --text-lead--line-height: 1.6;
+  --text-title: 1.375rem;
+  --text-title--line-height: 1.25;
+  --text-title--letter-spacing: -0.01em;
+  --text-heading: 2rem;
+  --text-heading--line-height: 1.15;
+  --text-heading--letter-spacing: -0.015em;
+  --text-display: clamp(2.375rem, 1.6rem + 3.4vw, 3.75rem);
+  --text-display--line-height: 1.05;
+  --text-display--letter-spacing: -0.02em;
+
+  /* Space: Tailwind's 4px grid, plus the two distances that give the page
+     its rhythm. `section` separates sections; `block` separates the parts
+     inside one. */
+  --spacing-section: clamp(4rem, 2rem + 6vw, 6rem);
+  --spacing-block: 3rem;
+  /* The widest a paragraph should run: about 70 characters of body text. */
+  --container-measure: 40rem;
+
+  /* Corners: small for media, chips and controls; large for cards and
+     inputs; overlay for dialogs and the chat panel. Pills use `full`. */
+  --radius-sm: 0.25rem;
+  --radius-md: 0.25rem;
+  --radius-lg: 0.5rem;
+  --radius-xl: 0.5rem;
+  --radius-2xl: 0.75rem;
+  --radius-3xl: 0.75rem;
+  --radius-4xl: 0.75rem;
+
+  /* Elevation: one shadow for things that sit just above the page, one for
+     things that float over it. */
+  --shadow-raised: 0 1px 2px rgb(0 0 0 / 0.06), 0 4px 12px rgb(0 0 0 / 0.08);
+  --shadow-overlay: 0 4px 8px rgb(0 0 0 / 0.08), 0 16px 40px rgb(0 0 0 / 0.2);
+  --shadow-sm: var(--shadow-raised);
+  --shadow-md: var(--shadow-raised);
+  --shadow-lg: var(--shadow-overlay);
+  --shadow-xl: var(--shadow-overlay);
+  --shadow-2xl: var(--shadow-overlay);
+
+  /* Motion: three durations and one ease-out curve. Only opacity and
+     transform are animated. */
+  --ease-standard: cubic-bezier(0.22, 1, 0.36, 1);
+  --default-transition-duration: var(--duration-fast);
+  --default-transition-timing-function: var(--ease-standard);
 }
 
 /*
@@ -64,7 +118,10 @@
   /* The thin print border around interest photos. */
   --print: #ffffff;
 
-  --radius: 0.625rem;
+  --radius: 0.5rem;
+  --duration-fast: 150ms;
+  --duration-base: 220ms;
+  --duration-slow: 360ms;
   --destructive: oklch(0.577 0.245 27.325);
 
   /* shadcn/ui roles, mapped onto the palette. */

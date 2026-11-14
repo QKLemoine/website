@@ -99,7 +99,7 @@ export function Gallery({
           <span
             key={photo.src}
             className={cn(
-              "group/cell flex min-h-0 flex-col rounded-[3px] bg-print p-1 pb-3 shadow-sm ring-1 ring-black/10",
+              "group/cell flex min-h-0 flex-col rounded-sm bg-print p-1 pb-3 shadow-sm ring-1 ring-black/10",
               shown.length === 3 && preview.cells[index],
             )}
           >
