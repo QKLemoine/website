@@ -10,9 +10,8 @@
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
   --font-heading: var(--font-sans);
-  /* Two typefaces: Geist for text, and this serif for display type only.
-     Geist Mono is reserved for keyboard shortcuts and code. */
-  --font-serif: var(--font-stix), Georgia, serif;
+  /* Two typefaces: Geist for everything readable, bold and tightly
+     tracked for display; Geist Mono for small uppercase labels only. */
   --color-ring: var(--ring);
   --color-input: var(--input);
   --color-border: var(--border);

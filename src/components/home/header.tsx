@@ -1,26 +1,26 @@
-import Image from "next/image";
+import Image from "next/image"
 
-import { AskPrompt } from "@/components/agent/ask-triggers";
-import { BackgroundLayer } from "@/components/background/background-layer";
-import { askExamples, education, profile } from "@/lib/content";
-import { cn } from "@/lib/utils";
+import { AskPrompt } from "@/components/agent/ask-triggers"
+import { BackgroundLayer } from "@/components/background/background-layer"
+import { askExamples, education, profile } from "@/lib/content"
+import { cn } from "@/lib/utils"
 
-import { socials } from "./shared";
+import { socials } from "./shared"
 
 function Portrait({
   sizes,
   preload = false,
   className,
 }: {
-  sizes: string;
-  preload?: boolean;
-  className?: string;
+  sizes: string
+  preload?: boolean
+  className?: string
 }) {
   return (
     <div
       className={cn(
         "relative aspect-4/5 overflow-hidden rounded-lg ring-1 ring-foreground/10",
-        className,
+        className
       )}
     >
       <Image
@@ -33,7 +33,7 @@ function Portrait({
         loading={preload ? undefined : "eager"}
       />
     </div>
-  );
+  )
 }
 
 /**
@@ -55,7 +55,7 @@ export function HomeHeader() {
                 ones it has its own column. */}
             <Portrait sizes="64px" className="w-16 shrink-0 lg:hidden" />
             <div>
-              <p className="type-title font-semibold">{profile.name}</p>
+              <p className="type-title font-bold">{profile.name}</p>
               <p className="mt-1 type-small text-muted-foreground">
                 {education.school},{" "}
                 {education.degree.replace("Bachelor of Science", "BS")}
@@ -63,15 +63,17 @@ export function HomeHeader() {
             </div>
           </div>
           <p className="mt-3 type-small text-muted-foreground">
-            <span className="font-medium text-signal">Currently</span>{" "}
+            <span className="mr-1 type-label text-signal">Currently</span>{" "}
             {profile.currently}
           </p>
-          <h1 className="mt-8 font-serif type-display text-balance">
+          <h1 className="mt-8 type-display font-bold text-balance">
             {profile.title}
           </h1>
           <p className="mt-6 max-w-measure type-lead text-foreground/90">
-            <span className="font-serif italic">Abstract.</span> {profile.pitch}{" "}
-            {profile.availability}
+            <span className="mr-1 type-label text-muted-foreground">
+              Abstract.
+            </span>{" "}
+            {profile.pitch} {profile.availability}
           </p>
           <AskPrompt examples={askExamples} className="mt-8" />
           <ul className="mt-4 flex flex-wrap gap-x-6 gap-y-1 type-small">
@@ -93,5 +95,5 @@ export function HomeHeader() {
         <Portrait sizes="272px" preload className="hidden lg:block" />
       </div>
     </header>
-  );
+  )
 }

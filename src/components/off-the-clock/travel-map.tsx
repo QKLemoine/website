@@ -257,7 +257,7 @@ export function TravelMap({
               {place.country === place.name ? "" : place.country}
             </span>
             {place.date && (
-              <span className="type-caption text-signal">{place.date}</span>
+              <span className="type-label text-signal">{place.date}</span>
             )}
           </p>
           {place.note && (

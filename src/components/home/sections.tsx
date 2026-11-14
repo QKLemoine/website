@@ -1,9 +1,9 @@
-import { ArrowUpRight, ChevronDown } from "lucide-react";
-import type { ReactNode } from "react";
+import { ArrowUpRight, ChevronDown } from "lucide-react"
+import type { ReactNode } from "react"
 
-import { Reveal } from "@/components/motion/reveal";
-import { Button } from "@/components/ui/button";
-import { OffTheClock } from "@/components/off-the-clock/off-the-clock";
+import { Reveal } from "@/components/motion/reveal"
+import { Button } from "@/components/ui/button"
+import { OffTheClock } from "@/components/off-the-clock/off-the-clock"
 import {
   about,
   experience,
@@ -12,8 +12,8 @@ import {
   projects,
   skills,
   type Project,
-} from "@/lib/content";
-import { cn } from "@/lib/utils";
+} from "@/lib/content"
+import { cn } from "@/lib/utils"
 
 import {
   Highlighted,
@@ -21,13 +21,13 @@ import {
   hasPair,
   projectId,
   socials,
-} from "./shared";
+} from "./shared"
 
-/** Small quiet labels: field names, figure numbers, list headings. */
-const LABEL = "type-caption font-medium text-muted-foreground";
+/** Small technical labels: field names, figure numbers, dates, tags. */
+const LABEL = "type-label text-muted-foreground"
 /** A text link: accent colour, underlined on hover, at least 24px tall. */
 const LINK =
-  "inline-flex min-h-6 items-center gap-0.5 rounded-sm font-medium text-primary underline-offset-4 outline-none hover:underline focus-visible:ring-3 focus-visible:ring-ring/50";
+  "inline-flex min-h-6 items-center gap-0.5 rounded-sm font-medium text-primary underline-offset-4 outline-none hover:underline focus-visible:ring-3 focus-visible:ring-ring/50"
 
 /** The accent used like a highlighter pen: a tint behind a few key words. */
 function Mark({ children }: { children: ReactNode }) {
@@ -35,7 +35,7 @@ function Mark({ children }: { children: ReactNode }) {
     <mark className="rounded-sm bg-primary/15 box-decoration-clone px-1 text-inherit dark:bg-primary/30">
       {children}
     </mark>
-  );
+  )
 }
 
 /**
@@ -48,20 +48,20 @@ function Section({
   label,
   children,
 }: {
-  id: string;
-  label: string;
-  children: ReactNode;
+  id: string
+  label: string
+  children: ReactNode
 }) {
   return (
     <section id={id} className="scroll-mt-14 pt-section">
       <Reveal>
-        <h2 className="border-t border-foreground/25 pt-6 font-serif type-heading">
+        <h2 className="border-t border-foreground/25 pt-6 type-heading font-bold">
           {label}
         </h2>
         <div className="mt-10">{children}</div>
       </Reveal>
     </section>
-  );
+  )
 }
 
 type EntryLayout =
@@ -70,7 +70,7 @@ type EntryLayout =
   /** Full width, with the text beside one figure. */
   | "wide"
   /** Full width, with two figures side by side and the text under them. */
-  | "pair";
+  | "pair"
 
 /**
  * One project. Every project has the same parts in the same order: title,
@@ -81,12 +81,12 @@ function ProjectEntry({
   project,
   layout,
 }: {
-  project: Project;
-  layout: EntryLayout;
+  project: Project
+  layout: EntryLayout
 }) {
   const title = (
-    <h3 className="type-title font-semibold text-balance">{project.title}</h3>
-  );
+    <h3 className="type-title font-bold text-balance">{project.title}</h3>
+  )
   const figures = (
     <ProjectFigures
       project={project}
@@ -97,10 +97,10 @@ function ProjectEntry({
       }
       captionClassName="mt-2 type-caption text-muted-foreground"
       label={(text) => (
-        <span className="font-medium text-foreground tabular-nums">{text}</span>
+        <span className="mr-1 type-label text-foreground">{text}</span>
       )}
     />
-  );
+  )
   const text = (
     <div className="space-y-2">
       {project.outcome && (
@@ -110,7 +110,7 @@ function ProjectEntry({
       )}
       <p className="type-body text-muted-foreground">{project.summary}</p>
     </div>
-  );
+  )
   const meta = (
     <div>
       {/* Tags are plain chips, so they cannot be mistaken for links. */}
@@ -118,7 +118,7 @@ function ProjectEntry({
         {project.tech.map((tech) => (
           <li
             key={tech}
-            className="rounded-sm border border-border px-2 py-0.5 type-caption text-muted-foreground"
+            className="rounded-sm border border-border px-2 py-1 type-label text-muted-foreground"
           >
             {tech}
           </li>
@@ -155,8 +155,8 @@ function ProjectEntry({
         </p>
       </details>
     </div>
-  );
-  const frame = "scroll-mt-20 border-t border-border pt-6 pb-14";
+  )
+  const frame = "scroll-mt-20 border-t border-border pt-6 pb-14"
 
   if (layout === "half") {
     return (
@@ -173,7 +173,7 @@ function ProjectEntry({
           {meta}
         </div>
       </article>
-    );
+    )
   }
 
   return (
@@ -200,18 +200,18 @@ function ProjectEntry({
         </>
       )}
     </article>
-  );
+  )
 }
 
 /** Everything under the hero: the page's five sections. */
 export function HomeSections() {
   const layouts: EntryLayout[] = projects.map((project, index) =>
-    index === 0 ? "wide" : hasPair(project) ? "pair" : "half",
-  );
+    index === 0 ? "wide" : hasPair(project) ? "pair" : "half"
+  )
   // An odd number of half-width entries would leave a hole in the grid, so
   // the last of them runs full width instead.
   if (layouts.filter((layout) => layout === "half").length % 2 === 1) {
-    layouts[layouts.lastIndexOf("half")] = "wide";
+    layouts[layouts.lastIndexOf("half")] = "wide"
   }
 
   return (
@@ -260,11 +260,11 @@ export function HomeSections() {
               key={`${entry.org}-${entry.dates}`}
               className="grid gap-x-8 gap-y-1 py-5 first:pt-0 last:pb-0 md:grid-cols-12"
             >
-              <p className="type-small text-signal tabular-nums md:col-span-2">
+              <p className="pt-0.5 type-label text-signal md:col-span-2">
                 {entry.dates}
               </p>
               <div className="md:col-span-4">
-                <h3 className="font-semibold">{entry.role}</h3>
+                <h3 className="font-bold">{entry.role}</h3>
                 <p className="type-small text-muted-foreground">{entry.org}</p>
               </div>
               <p className="type-body text-muted-foreground md:col-span-6">
@@ -276,7 +276,7 @@ export function HomeSections() {
       </Section>
 
       <Section id="off-the-clock" label="Off the clock">
-        <OffTheClock headingClassName="type-title font-semibold" />
+        <OffTheClock headingClassName="type-title font-bold" />
       </Section>
 
       <Section id="contact" label="Contact">
@@ -305,5 +305,5 @@ export function HomeSections() {
         </ul>
       </Section>
     </>
-  );
+  )
 }

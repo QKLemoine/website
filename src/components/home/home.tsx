@@ -1,8 +1,8 @@
-import { HomeHeader } from "./header";
-import { HomeSections } from "./sections";
+import { HomeHeader } from "./header"
+import { HomeSections } from "./sections"
 
 /** Width of the page's content column, shared with the nav bar and footer. */
-export const HOME_WIDTH = "max-w-6xl";
+export const HOME_WIDTH = "max-w-6xl"
 
 /** The home page: the hero, then the sections, all on one left edge. */
 export function Home() {
@@ -14,5 +14,5 @@ export function Home() {
         <HomeSections />
       </div>
     </div>
-  );
+  )
 }

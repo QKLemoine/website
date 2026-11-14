@@ -115,7 +115,7 @@ export function ProjectVisual({
         className
       )}
     >
-      <span className="font-medium">
+      <span className="type-label">
         Placeholder, fig. {figureNumber(project)}
       </span>
       <span className="line-clamp-3 max-w-[40ch]">{project.figureBrief}</span>

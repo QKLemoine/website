@@ -25,7 +25,7 @@ function PlaceList() {
       <dl className="grid grid-cols-[auto_1fr] gap-x-4 gap-y-1.5">
         {lived.length > 0 && (
           <>
-            <dt className="text-signal">Lived</dt>
+            <dt className="pt-0.5 type-label text-signal">Lived</dt>
             <dd>{lived.map((place) => place.name).join(", ")}</dd>
           </>
         )}
@@ -35,7 +35,9 @@ function PlaceList() {
             .map((place) => place.name)
           return (
             <div key={country} className="contents">
-              <dt className="text-muted-foreground">{country}</dt>
+              <dt className="pt-0.5 type-label text-muted-foreground">
+                {country}
+              </dt>
               {/* A country with no named places inside it is its own entry. */}
               <dd>
                 {names.length === 1 && names[0] === country
@@ -52,7 +54,7 @@ function PlaceList() {
             <li key={place.name}>
               <span className="font-medium">{place.name}</span>
               {place.date && (
-                <span className="type-caption text-signal"> {place.date}</span>
+                <span className="ml-1 type-label text-signal">{place.date}</span>
               )}
               <span className="block text-muted-foreground">{place.note}</span>
             </li>
@@ -152,8 +154,10 @@ export function OffTheClock({
           <dl className="mt-3 grid grid-cols-3 gap-4">
             {cycling.stats.map((stat) => (
               <div key={stat.label} className="flex flex-col-reverse justify-end">
-                <dt className="type-caption text-muted-foreground">{stat.label}</dt>
-                <dd className="type-title font-semibold tabular-nums">
+                <dt className="mt-1 type-label text-muted-foreground">
+                  {stat.label}
+                </dt>
+                <dd className="type-title font-bold tabular-nums">
                   {stat.value}
                 </dd>
               </div>
