@@ -71,7 +71,7 @@ function RideHeatmap({
   cycling: ReturnType<typeof getCycling>
 }) {
   return (
-    <div className="relative aspect-2/1 overflow-hidden rounded-lg bg-card ring-1 ring-foreground/10">
+    <div className="relative aspect-2/1 overflow-hidden rounded-sm bg-card ring-1 ring-border ring-inset">
       <svg
         viewBox={cycling.viewBox}
         role="img"

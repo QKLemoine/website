@@ -44,14 +44,29 @@ function Mark({ children }: { children: ReactNode }) {
 function Section({
   id,
   label,
+  band = false,
   children,
 }: {
   id: string
   label: string
+  /** Sit the section on a full-width band one step off the page colour. */
+  band?: boolean
   children: ReactNode
 }) {
   return (
-    <section id={id} className="scroll-mt-14 pt-section">
+    <section
+      id={id}
+      className={cn(
+        "scroll-mt-14 pt-section",
+        band && "relative isolate mt-section pb-block"
+      )}
+    >
+      {band && (
+        <div
+          aria-hidden
+          className="absolute inset-y-0 left-1/2 -z-10 w-screen -translate-x-1/2 border-y border-border bg-band"
+        />
+      )}
       <Reveal>
         <h2 className="border-t border-foreground/25 pt-6 type-heading font-bold">
           {label}
@@ -271,7 +286,7 @@ export function HomeSections() {
         </ol>
       </Section>
 
-      <Section id="off-the-clock" label="Off the clock">
+      <Section id="off-the-clock" label="Off the clock" band>
         <OffTheClock headingClassName="type-title font-bold" />
       </Section>
 

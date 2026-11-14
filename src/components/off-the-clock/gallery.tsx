@@ -92,28 +92,28 @@ export function Gallery({
     );
   } else {
     trigger = (
-      <span className={cn("grid aspect-4/3 gap-2", grid)}>
+      <span className={cn("grid aspect-4/3 gap-seam", grid)}>
         {shown.map((photo, index) => (
-          // Each photo sits in a thin print border, a little deeper at the
-          // bottom like a Polaroid.
+          // Sharp tiles on a thin seam; the photo eases up slightly on hover.
           <span
             key={photo.src}
             className={cn(
-              "group/cell flex min-h-0 flex-col rounded-sm bg-print p-1 pb-3 shadow-sm ring-1 ring-black/10 transition-transform duration-(--duration-base) group-hover/trigger:-translate-y-0.5",
+              "group/cell relative block min-h-0 overflow-hidden rounded-sm bg-media",
               shown.length === 3 && preview.cells[index],
             )}
           >
-            <span className="relative block min-h-0 flex-1 overflow-hidden">
-              <PhotoFill
-                photo={photo}
-                sizes="(min-width: 1024px) 360px, 50vw"
-              />
-              {photo.caption && !photo.missing && (
-                <span className="absolute inset-x-0 bottom-0 bg-black/65 px-1.5 py-1 text-left type-caption text-white opacity-0 transition-opacity group-hover/cell:opacity-100 group-focus-visible/trigger:opacity-100">
-                  {photo.caption}
-                </span>
-              )}
-            </span>
+            <PhotoFill
+              photo={photo}
+              sizes="(min-width: 1024px) 440px, 50vw"
+              className="transition-transform duration-(--duration-slow) group-hover/cell:scale-[1.03]"
+            />
+            {photo.caption && !photo.missing && (
+              // A small mono caption: shown on hover or keyboard focus, and
+              // always on touch screens, which cannot hover.
+              <span className="absolute inset-x-0 bottom-0 line-clamp-2 bg-black/75 px-2 py-1.5 text-left type-label text-white opacity-0 transition-opacity group-hover/cell:opacity-100 group-focus-visible/trigger:opacity-100 [@media(hover:none)]:opacity-100">
+                {photo.caption}
+              </span>
+            )}
           </span>
         ))}
       </span>

@@ -142,7 +142,7 @@ export function TravelMap({
     Math.abs(region.box[2] - view.width) < 0.5
 
   const controlClass =
-    "flex size-7 items-center justify-center rounded-md bg-background/85 text-muted-foreground outline-none ring-1 ring-foreground/10 hover:text-foreground focus-visible:ring-3 focus-visible:ring-ring/60 disabled:opacity-40"
+    "flex size-7 items-center justify-center rounded-sm bg-background/90 text-muted-foreground outline-none ring-1 ring-border hover:text-foreground focus-visible:ring-3 focus-visible:ring-ring/60 disabled:opacity-40"
 
   return (
     <div>
@@ -186,7 +186,7 @@ export function TravelMap({
         onPointerUp={endDrag}
         onPointerCancel={endDrag}
         // One finger still scrolls the page up and down; sideways drags pan.
-        className="relative mt-2 aspect-16/10 cursor-grab touch-pan-y overflow-hidden rounded-lg bg-card ring-1 ring-foreground/10 select-none active:cursor-grabbing"
+        className="relative mt-2 aspect-16/10 cursor-grab touch-pan-y overflow-hidden rounded-sm bg-card ring-1 ring-border ring-inset select-none active:cursor-grabbing"
       >
         <svg
           viewBox={`${view.x} ${view.y} ${view.width} ${height}`}
