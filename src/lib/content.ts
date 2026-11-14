@@ -112,7 +112,8 @@ export const skills: SkillGroup[] = [
   },
 ]
 
-export const spokenLanguages = ["English", "French", "Dutch"]
+/** All native; listed in this order under the skills in About. */
+export const spokenLanguages = ["Dutch", "French", "English"]
 
 export type ProjectLink = { label: string; href: string }
 

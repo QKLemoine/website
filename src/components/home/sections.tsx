@@ -11,6 +11,7 @@ import {
   profile,
   projects,
   skills,
+  spokenLanguages,
   type Project,
 } from "@/lib/content"
 import { cn } from "@/lib/utils"
@@ -255,10 +256,19 @@ export function HomeSections() {
           ))}
         </div>
         <dl className="mt-block grid gap-x-8 gap-y-6 border-t border-border pt-6 type-small sm:grid-cols-2 lg:grid-cols-4">
-          {skills.map((group) => (
+          {skills.map((group, index) => (
             <div key={group.label}>
               <dt className={LABEL}>{group.label}</dt>
               <dd className="mt-1">{group.items.join(", ")}</dd>
+              {/* Spoken languages sit under the programming ones. */}
+              {index === 0 && (
+                <>
+                  <dt className={cn(LABEL, "mt-5")}>Languages</dt>
+                  <dd className="mt-1">
+                    Native: {spokenLanguages.join(", ")}
+                  </dd>
+                </>
+              )}
             </div>
           ))}
         </dl>
