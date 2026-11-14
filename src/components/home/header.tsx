@@ -1,7 +1,6 @@
 import Image from "next/image"
 
 import { AskPrompt } from "@/components/agent/ask-triggers"
-import { BackgroundLayer } from "@/components/background/background-layer"
 import { askExamples, education, profile } from "@/lib/content"
 import { cn } from "@/lib/utils"
 
@@ -18,10 +17,7 @@ function Portrait({
 }) {
   return (
     <div
-      className={cn(
-        "relative aspect-4/5 overflow-hidden rounded-lg ring-1 ring-foreground/10",
-        className
-      )}
+      className={cn("relative aspect-4/5 overflow-hidden bg-media", className)}
     >
       <Image
         src="/headshot.jpg"
@@ -37,45 +33,52 @@ function Portrait({
 }
 
 /**
- * The page's opening. The serif headline is the one focal point; who, where
- * and what now sit quietly above it, and the ways to get in touch below.
+ * The page's opening, on the same 12-column grid as everything below it.
+ * Who and where sit in a quiet row of metadata; the headline is the one
+ * large statement; the summary, Ask bar and links close it under a
+ * hairline.
  */
 export function HomeHeader() {
   return (
-    <header id="top" className="relative isolate pt-12 sm:pt-16">
-      {/* Contour lines, like the margin of a survey map; they bleed past
-          the column and fade out as the page scrolls. */}
-      <div className="absolute inset-y-0 left-1/2 -z-10 w-screen -translate-x-1/2 opacity-70">
-        <BackgroundLayer motif="contours" fadeOnScroll />
-      </div>
-      <div className="grid gap-x-16 lg:grid-cols-[minmax(0,1fr)_17rem] lg:items-start">
-        <div className="min-w-0">
-          <div className="flex items-center gap-4">
-            {/* On narrow screens the portrait sits beside the name; on wide
-                ones it has its own column. */}
-            <Portrait sizes="64px" className="w-16 shrink-0 lg:hidden" />
-            <div>
-              <p className="type-title font-bold">{profile.name}</p>
-              <p className="mt-1 type-small text-muted-foreground">
-                {education.school},{" "}
-                {education.degree.replace("Bachelor of Science", "BS")}
-              </p>
-            </div>
+    <header id="top" className="pt-12 sm:pt-20">
+      <div className="grid gap-x-8 gap-y-4 border-b border-border pb-6 lg:grid-cols-12">
+        <div className="flex items-center gap-4 lg:col-span-5">
+          {/* On narrow screens the portrait sits beside the name. */}
+          <Portrait sizes="64px" className="w-16 shrink-0 lg:hidden" />
+          <div>
+            <p className="type-title font-bold">{profile.name}</p>
+            <p className="mt-1 type-small text-muted-foreground">
+              {education.school},{" "}
+              {education.degree.replace("Bachelor of Science", "BS")}
+            </p>
           </div>
-          <p className="mt-3 type-small text-muted-foreground">
-            <span className="mr-1 type-label text-signal">Currently</span>{" "}
-            {profile.currently}
-          </p>
-          <h1 className="mt-8 type-display font-bold text-balance">
-            {profile.title}
-          </h1>
-          <p className="mt-6 max-w-measure type-lead text-foreground/90">
-            <span className="mr-1 type-label text-muted-foreground">
-              Abstract.
-            </span>{" "}
-            {profile.pitch} {profile.availability}
-          </p>
-          <AskPrompt examples={askExamples} className="mt-8" />
+        </div>
+        <p className="type-small text-muted-foreground lg:col-span-5 lg:col-start-8 lg:self-end">
+          <span className="mb-1 block type-label text-signal">Currently</span>
+          {profile.currently}
+        </p>
+      </div>
+
+      <div className="grid gap-x-8 pt-10 sm:pt-14 lg:grid-cols-12 lg:items-end">
+        <h1 className="type-display font-bold text-balance lg:col-span-9">
+          {profile.title}
+        </h1>
+        <Portrait
+          sizes="(min-width: 1440px) 320px, 22vw"
+          preload
+          className="hidden lg:col-span-3 lg:block"
+        />
+      </div>
+
+      <div className="mt-10 grid gap-x-8 gap-y-8 border-t border-border pt-8 sm:mt-14 lg:grid-cols-12">
+        <p className="max-w-measure type-lead text-foreground/90 lg:col-span-6">
+          <span className="mr-1 type-label text-muted-foreground">
+            Abstract.
+          </span>{" "}
+          {profile.pitch} {profile.availability}
+        </p>
+        <div className="lg:col-span-5 lg:col-start-8">
+          <AskPrompt examples={askExamples} className="max-w-none" />
           <ul className="mt-4 flex flex-wrap gap-x-6 gap-y-1 type-small">
             {socials.map(({ label, href, icon: Icon }) => (
               <li key={label}>
@@ -92,7 +95,6 @@ export function HomeHeader() {
             ))}
           </ul>
         </div>
-        <Portrait sizes="272px" preload className="hidden lg:block" />
       </div>
     </header>
   )

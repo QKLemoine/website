@@ -91,7 +91,7 @@ export function AskPrompt({
       onPointerEnter={preload}
       onFocus={preload}
       className={cn(
-        "flex h-11 w-full max-w-md items-center gap-2.5 rounded-lg border border-border bg-card px-3.5 text-left type-small text-muted-foreground outline-none transition-colors hover:border-ring focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/30",
+        "flex h-12 w-full max-w-md items-center gap-3 rounded-sm border border-border bg-transparent px-4 text-left type-small text-muted-foreground outline-none transition-colors hover:border-foreground/50 focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/30",
         className
       )}
     >
@@ -108,7 +108,7 @@ export function AskPrompt({
           {examples[index] ?? label}
         </motion.span>
       </AnimatePresence>
-      <kbd className="ml-auto hidden shrink-0 rounded border border-border px-1.5 py-0.5 font-sans type-caption leading-none sm:inline">
+      <kbd className="ml-auto hidden shrink-0 rounded-sm border border-border px-1.5 py-0.5 type-label sm:inline">
         {shortcut}
       </kbd>
     </button>

@@ -70,7 +70,7 @@
   --spacing-section: clamp(5rem, 2rem + 8vw, 8rem);
   --spacing-block: 3.5rem;
   /* The outer page margin, and the thin gutter between media tiles. */
-  --spacing-gutter: 1.5rem;
+  --spacing-gutter: clamp(1.25rem, 0.5rem + 2vw, 2rem);
   --spacing-seam: 0.5rem;
   /* The widest a paragraph should run: about 70 characters of body text. */
   --container-measure: 40rem;
