@@ -30,6 +30,7 @@ function Portrait({
         sizes={sizes}
         className="object-cover object-[50%_20%]"
         preload={preload}
+        loading={preload ? undefined : "eager"}
       />
     </div>
   );
