@@ -1,106 +1,96 @@
-import Image from "next/image"
-import type { ReactNode } from "react"
+import Image from "next/image";
 
-import { AskPrompt } from "@/components/agent/ask-triggers"
-import { BackgroundLayer } from "@/components/background/background-layer"
-import { askExamples, education, profile } from "@/lib/content"
-import { cn } from "@/lib/utils"
+import { AskPrompt } from "@/components/agent/ask-triggers";
+import { BackgroundLayer } from "@/components/background/background-layer";
+import { askExamples, education, profile } from "@/lib/content";
+import { cn } from "@/lib/utils";
 
-import { socials } from "./shared"
+import { socials } from "./shared";
 
-/**
- * One row of the page: the reading column, with its margin note beside it on
- * wide screens and directly under it on narrow ones.
- */
-function Row({
-  children,
-  note,
+function Portrait({
+  sizes,
+  preload = false,
   className,
 }: {
-  children: ReactNode
-  note?: ReactNode
-  className?: string
+  sizes: string;
+  preload?: boolean;
+  className?: string;
 }) {
   return (
     <div
       className={cn(
-        "grid gap-x-12 gap-y-4 lg:grid-cols-[minmax(0,41rem)_minmax(0,1fr)]",
-        className
+        "relative aspect-4/5 overflow-hidden rounded-lg ring-1 ring-foreground/10",
+        className,
       )}
     >
-      <div className="min-w-0">{children}</div>
-      {note && (
-        <aside className="border-l border-border pl-4 type-small text-muted-foreground lg:border-l-0 lg:pl-0">
-          {note}
-        </aside>
-      )}
+      <Image
+        src="/headshot.jpg"
+        alt={profile.name}
+        fill
+        sizes={sizes}
+        className="object-cover object-[50%_20%]"
+        preload={preload}
+      />
     </div>
-  )
+  );
 }
 
 /**
- * The page's opening, set like the first page of a paper: front matter, serif headline, abstract and the Ask
- * bar, with the portrait and links as its margin note.
+ * The page's opening. The serif headline is the one focal point; who, where
+ * and what now sit quietly above it, and the ways to get in touch below.
  */
 export function HomeHeader() {
   return (
-    <header id="top" className="relative isolate pt-10 pb-2 sm:pt-14">
+    <header id="top" className="relative isolate pt-12 sm:pt-16">
       {/* Contour lines, like the margin of a survey map; they bleed past
-          the column and stop at the end of the abstract. */}
+          the column and fade out as the page scrolls. */}
       <div className="absolute inset-y-0 left-1/2 -z-10 w-screen -translate-x-1/2 opacity-70">
         <BackgroundLayer motif="contours" fadeOnScroll />
       </div>
-      <Row
-        note={
-          <div className="flex gap-4 lg:flex-col">
-            <figure className="w-28 shrink-0 lg:w-40">
-              <div className="relative aspect-4/5 overflow-hidden rounded-sm ring-1 ring-foreground/10">
-                <Image
-                  src="/headshot.jpg"
-                  alt={profile.name}
-                  fill
-                  sizes="160px"
-                  className="object-cover object-[50%_20%]"
-                  preload
-                />
-              </div>
-            </figure>
-            <ul className="space-y-1 type-small">
-              {socials.map(({ label, href }) => (
-                <li key={label}>
-                  <a
-                    href={href}
-                    target={href.startsWith("mailto:") ? undefined : "_blank"}
-                    rel="noreferrer"
-                    className="text-primary underline-offset-4 outline-none hover:underline focus-visible:underline"
-                  >
-                    {label === "Email" ? profile.email : label}
-                  </a>
-                </li>
-              ))}
-            </ul>
+      <div className="grid gap-x-16 lg:grid-cols-[minmax(0,1fr)_17rem] lg:items-start">
+        <div className="min-w-0">
+          <div className="flex items-center gap-4">
+            {/* On narrow screens the portrait sits beside the name; on wide
+                ones it has its own column. */}
+            <Portrait sizes="64px" className="w-16 shrink-0 lg:hidden" />
+            <div>
+              <p className="type-title font-semibold">{profile.name}</p>
+              <p className="mt-1 type-small text-muted-foreground">
+                {education.school},{" "}
+                {education.degree.replace("Bachelor of Science", "BS")}
+              </p>
+            </div>
           </div>
-        }
-      >
-        <p className="type-title font-semibold text-foreground">
-          {profile.name}
-        </p>
-        <p className="mt-1 type-small text-muted-foreground">
-          {education.school}, {education.degree.replace("Bachelor of Science", "BS")}
-        </p>
-        <p className="mt-1 flex gap-2 type-small text-muted-foreground">
-          <span className="shrink-0 font-medium text-signal">Currently</span>
-          <span>{profile.currently}</span>
-        </p>
-        <h1 className="mt-6 font-serif type-display text-balance">
-          {profile.title}
-        </h1>
-        <p className="mt-6 type-lead text-foreground/90">
-          <span className="font-serif italic">Abstract.</span>{" "}
-          {profile.pitch} {profile.availability}
-        </p>
-        <AskPrompt examples={askExamples} className="mt-6" />
-      </Row>
+          <p className="mt-3 type-small text-muted-foreground">
+            <span className="font-medium text-signal">Currently</span>{" "}
+            {profile.currently}
+          </p>
+          <h1 className="mt-8 font-serif type-display text-balance">
+            {profile.title}
+          </h1>
+          <p className="mt-6 max-w-measure type-lead text-foreground/90">
+            <span className="font-serif italic">Abstract.</span> {profile.pitch}{" "}
+            {profile.availability}
+          </p>
+          <AskPrompt examples={askExamples} className="mt-8" />
+          <ul className="mt-4 flex flex-wrap gap-x-6 gap-y-1 type-small">
+            {socials.map(({ label, href, icon: Icon }) => (
+              <li key={label}>
+                <a
+                  href={href}
+                  target={href.startsWith("mailto:") ? undefined : "_blank"}
+                  rel="noreferrer"
+                  className="inline-flex min-h-6 items-center gap-1.5 rounded-sm text-muted-foreground outline-none transition-colors hover:text-foreground focus-visible:ring-3 focus-visible:ring-ring/50"
+                >
+                  <Icon aria-hidden className="size-4" />
+                  {label === "Email" ? profile.email : label}
+                </a>
+              </li>
+            ))}
+          </ul>
+        </div>
+        <Portrait sizes="272px" preload className="hidden lg:block" />
+      </div>
     </header>
-  )
+  );
 }
