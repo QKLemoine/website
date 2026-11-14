@@ -1,4 +1,4 @@
-import { ArrowUpRight } from "lucide-react";
+import { ArrowUpRight, ChevronDown } from "lucide-react";
 import type { ReactNode } from "react";
 
 import { OffTheClock } from "@/components/off-the-clock/off-the-clock";
@@ -23,6 +23,9 @@ import {
 
 /** Small quiet labels: field names, figure numbers, list headings. */
 const LABEL = "type-caption font-medium text-muted-foreground";
+/** A text link: accent colour, underlined on hover, at least 24px tall. */
+const LINK =
+  "inline-flex min-h-6 items-center gap-0.5 rounded-sm font-medium text-primary underline-offset-4 outline-none hover:underline focus-visible:ring-3 focus-visible:ring-ring/50";
 
 /** The accent used like a highlighter pen: a tint behind a few key words. */
 function Mark({ children }: { children: ReactNode }) {
@@ -106,16 +109,26 @@ function ProjectEntry({
   );
   const meta = (
     <div>
-      <p className={LABEL}>{project.tech.join(" / ")}</p>
+      {/* Tags are plain chips, so they cannot be mistaken for links. */}
+      <ul className="flex flex-wrap gap-1.5">
+        {project.tech.map((tech) => (
+          <li
+            key={tech}
+            className="rounded-sm border border-border px-2 py-0.5 type-caption text-muted-foreground"
+          >
+            {tech}
+          </li>
+        ))}
+      </ul>
       {project.links && project.links.length > 0 && (
-        <ul className="mt-2 flex flex-wrap gap-x-5 gap-y-1 type-small">
+        <ul className="mt-3 flex flex-wrap gap-x-5 gap-y-1 type-small">
           {project.links.map((link) => (
             <li key={link.href}>
               <a
                 href={link.href}
                 target="_blank"
                 rel="noreferrer"
-                className="inline-flex items-center gap-0.5 underline decoration-primary underline-offset-4 outline-none hover:text-primary focus-visible:text-primary"
+                className={LINK}
               >
                 {link.label}
                 <ArrowUpRight aria-hidden className="size-3.5" />
@@ -124,10 +137,14 @@ function ProjectEntry({
           ))}
         </ul>
       )}
-      <details className="group/details mt-3">
-        <summary className="cursor-pointer list-none rounded-sm type-small text-muted-foreground underline-offset-4 outline-none hover:text-foreground hover:underline focus-visible:ring-3 focus-visible:ring-ring/50 [&::-webkit-details-marker]:hidden">
+      <details className="group/details reveal mt-3">
+        <summary className="inline-flex min-h-6 cursor-pointer list-none items-center gap-1 rounded-sm type-small text-muted-foreground outline-none transition-colors hover:text-foreground focus-visible:ring-3 focus-visible:ring-ring/50 [&::-webkit-details-marker]:hidden">
           <span className="group-open/details:hidden">Read the write-up</span>
           <span className="hidden group-open/details:inline">Close</span>
+          <ChevronDown
+            aria-hidden
+            className="size-4 transition-transform group-open/details:rotate-180"
+          />
         </summary>
         <p className="mt-2 max-w-measure type-body text-foreground/90">
           {project.description}

@@ -134,7 +134,7 @@ export function OffTheClock({
             <PlaceList />
           </div>
           <details className="mt-3 hidden type-small lg:block">
-            <summary className="cursor-pointer rounded-sm text-muted-foreground underline-offset-4 outline-none hover:text-foreground hover:underline focus-visible:ring-3 focus-visible:ring-ring/50">
+            <summary className="min-h-6 cursor-pointer rounded-sm text-muted-foreground underline-offset-4 outline-none transition-colors hover:text-foreground focus-visible:ring-3 focus-visible:ring-ring/50">
               {places.length} of the many places I&apos;ve been, as a list
             </summary>
             <div className="mt-3">

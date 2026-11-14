@@ -169,7 +169,7 @@ export function TravelMap({
                 })
               }
               className={cn(
-                "rounded-md px-2 py-1 outline-none transition-colors hover:text-foreground focus-visible:ring-3 focus-visible:ring-ring/60",
+                "min-h-7 rounded-md px-2 outline-none transition-colors hover:text-foreground focus-visible:ring-3 focus-visible:ring-ring/60",
                 atRegion(region) && "bg-muted text-foreground"
               )}
             >
@@ -216,9 +216,9 @@ export function TravelMap({
               onClick={() => setSelected(index)}
               style={{ left: `${x}%`, top: `${y}%` }}
               className={cn(
-                // The hit area is larger than the dot, but small enough that
+                // A 24px hit area: larger than the dot, but small enough that
                 // neighbours stay separately clickable once zoomed in.
-                "absolute flex size-5 -translate-1/2 cursor-pointer items-center justify-center rounded-full outline-none focus-visible:z-20 focus-visible:ring-3 focus-visible:ring-ring/70",
+                "absolute flex size-6 -translate-1/2 cursor-pointer items-center justify-center rounded-full outline-none transition-colors hover:bg-foreground/10 focus-visible:z-20 focus-visible:ring-3 focus-visible:ring-ring/70",
                 // The selected place sits on top where markers overlap.
                 index === selected && "z-10 bg-foreground/15"
               )}
