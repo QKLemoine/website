@@ -32,6 +32,7 @@
   --color-signal: var(--signal);
   --color-print: var(--print);
   --color-media: var(--media);
+  --color-band: var(--band);
 }
 
 /*
@@ -50,82 +51,97 @@
   --text-body--line-height: 1.65;
   --text-lead: 1.125rem;
   --text-lead--line-height: 1.6;
-  --text-title: 1.375rem;
-  --text-title--line-height: 1.25;
-  --text-title--letter-spacing: -0.01em;
-  --text-heading: 2rem;
-  --text-heading--line-height: 1.15;
-  --text-heading--letter-spacing: -0.015em;
-  --text-display: clamp(2.375rem, 1.6rem + 3.4vw, 3.75rem);
-  --text-display--line-height: 1.05;
-  --text-display--letter-spacing: -0.02em;
+  --text-title: 1.5rem;
+  --text-title--line-height: 1.15;
+  --text-title--letter-spacing: -0.02em;
+  --text-heading: clamp(2rem, 1.4rem + 2.4vw, 3.5rem);
+  --text-heading--line-height: 1.05;
+  --text-heading--letter-spacing: -0.03em;
+  --text-display: clamp(2.75rem, 1.4rem + 5.6vw, 5.75rem);
+  --text-display--line-height: 0.98;
+  --text-display--letter-spacing: -0.04em;
+  /* Small technical labels, set in the mono face in uppercase. */
+  --text-label: 0.6875rem;
+  --text-label--line-height: 1.4;
+  --text-label--letter-spacing: 0.08em;
 
   /* Space: Tailwind's 4px grid, plus the two distances that give the page
      its rhythm. `section` separates sections; `block` separates the parts
      inside one. */
-  --spacing-section: clamp(4rem, 2rem + 6vw, 6rem);
-  --spacing-block: 3rem;
+  --spacing-section: clamp(5rem, 2rem + 8vw, 8rem);
+  --spacing-block: 3.5rem;
+  /* The outer page margin, and the thin gutter between media tiles. */
+  --spacing-gutter: 1.5rem;
+  --spacing-seam: 0.5rem;
   /* The widest a paragraph should run: about 70 characters of body text. */
   --container-measure: 40rem;
 
-  /* Corners: small for media, chips and controls; large for cards and
-     inputs; overlay for dialogs and the chat panel. Pills use `full`. */
-  --radius-sm: 0.25rem;
-  --radius-md: 0.25rem;
-  --radius-lg: 0.5rem;
-  --radius-xl: 0.5rem;
-  --radius-2xl: 0.75rem;
-  --radius-3xl: 0.75rem;
-  --radius-4xl: 0.75rem;
+  /* Corners: nearly square. 2px for media, chips, controls and cards; 4px
+     only for floating panels. Pills (`full`) are reserved for the chat
+     launcher. */
+  --radius-sm: 0.125rem;
+  --radius-md: 0.125rem;
+  --radius-lg: 0.125rem;
+  --radius-xl: 0.125rem;
+  --radius-2xl: 0.25rem;
+  --radius-3xl: 0.25rem;
+  --radius-4xl: 0.25rem;
 
-  /* Elevation: one shadow for things that sit just above the page, one for
-     things that float over it. */
-  --shadow-raised: 0 1px 2px rgb(0 0 0 / 0.06), 0 4px 12px rgb(0 0 0 / 0.08);
-  --shadow-overlay: 0 4px 8px rgb(0 0 0 / 0.08), 0 16px 40px rgb(0 0 0 / 0.2);
+  /* Elevation: flat. Things on the page are separated by hairlines, not
+     shadows; only overlays (dialogs, the chat panel) cast one. */
+  --shadow-raised: none;
+  --shadow-overlay: 0 24px 64px rgb(0 0 0 / 0.45);
   --shadow-sm: var(--shadow-raised);
   --shadow-md: var(--shadow-raised);
   --shadow-lg: var(--shadow-overlay);
   --shadow-xl: var(--shadow-overlay);
   --shadow-2xl: var(--shadow-overlay);
 
-  /* Motion: three durations and one ease-out curve. Only opacity and
-     transform are animated. */
-  --ease-standard: cubic-bezier(0.22, 1, 0.36, 1);
+  /* Motion: slow and smooth. Three durations and one long ease-out; only
+     opacity and transform are animated. */
+  --ease-standard: cubic-bezier(0.16, 1, 0.3, 1);
   --default-transition-duration: var(--duration-fast);
   --default-transition-timing-function: var(--ease-standard);
 }
 
 /*
- * Colour tokens. Each theme defines eight palette values; every other colour
- * on the site (including the hero background) is derived from them, so a
- * palette change happens here and nowhere else.
+ * Colour tokens. Dark is the primary theme: near-black, off-white type and
+ * grey hairlines. Light is a warm paper version of the same system. Every
+ * other colour on the site is derived from these.
  *
- * --brand and --signal are accents for small things only: links, tags, dates,
- * focus rings, one metric per card. Never a large fill. Both pass WCAG AA
- * (4.5:1) as text on --page, --surface and --elevated in their theme.
+ * THE ACCENT is one token per theme, set right here. It is used only for
+ * small things: links, focus rings, dates, the highlighted metric, active
+ * states. To try a different accent, change these two lines (for example
+ * #2f5fd0 / #5b8def for the previous blue). Both values must stay at 4.5:1
+ * or better against the page in their theme.
  */
 :root {
-  --page: #e8ecf2;
-  --surface: #f2f4f8;
-  --elevated: #f8f9fb;
-  --line: #c9d1de;
-  --text: #0f1a2e;
-  --text-muted: #4a5873;
-  --brand: #2f5fd0;
+  --accent-light: #a84a0c;
+  --accent-dark: #f08a3e;
+}
+
+:root {
+  --page: #f2f1ec;
+  --surface: #e9e7e0;
+  --elevated: #fbfaf7;
+  --line: #d3d0c6;
+  --text: #111111;
+  --text-muted: #5c5b56;
+  /* The band behind "Off the clock", one step off the page. */
+  --band: #e9e7e0;
+  --brand: var(--accent-light);
   /* Text on a --brand fill. */
   --on-brand: #ffffff;
-  /* Secondary accent, a warm amber: 5.0:1 on --page, 5.4 on --surface. */
-  --signal: #8a5a00;
-  /* The thin print border around interest photos. */
-  --print: #ffffff;
-  /* Behind project clips, which are dark recordings: a deep navy in both
-     themes, so a letterboxed clip reads as one framed object. */
-  --media: #0e1626;
+  --signal: var(--brand);
+  --print: var(--surface);
+  /* Behind project media, which are mostly dark recordings: black in both
+     themes, so every clip reads as a solid block. */
+  --media: #000000;
 
   --radius: 0.5rem;
-  --duration-fast: 150ms;
-  --duration-base: 220ms;
-  --duration-slow: 360ms;
+  --duration-fast: 200ms;
+  --duration-base: 400ms;
+  --duration-slow: 700ms;
   --destructive: oklch(0.577 0.245 27.325);
 
   /* shadcn/ui roles, mapped onto the palette. */
@@ -149,20 +165,19 @@
 }
 
 .dark {
-  --page: #0b1220;
-  --surface: #111a2e;
-  --elevated: #16213a;
-  --line: #24304a;
-  --text: #e6eaf2;
-  --text-muted: #9aa6bd;
-  --brand: #5b8def;
-  /* White on this lighter blue is only 3.3:1, so text on it is the page navy. */
-  --on-brand: #0b1220;
-  /* 8.8:1 on --page, 8.2 on --surface. */
-  --signal: #e0a84b;
-  /* Off-white rather than pure white, so prints don't glare on navy. */
-  --print: #e4e8ef;
-  --media: #070c16;
+  --page: #0a0a0a;
+  --surface: #141414;
+  --elevated: #1a1a1a;
+  --line: #2a2a2a;
+  --text: #f4f4f2;
+  --text-muted: #9a9a96;
+  --band: #121212;
+  --brand: var(--accent-dark);
+  /* A light accent carries dark text. */
+  --on-brand: #0a0a0a;
+  --signal: var(--brand);
+  --print: var(--surface);
+  --media: #000000;
 
   --destructive: oklch(0.704 0.191 22.216);
 }
@@ -196,6 +211,13 @@
   font-size: var(--text-heading);
   line-height: var(--text-heading--line-height);
   letter-spacing: var(--text-heading--letter-spacing);
+}
+@utility type-label {
+  font-family: var(--font-mono);
+  font-size: var(--text-label);
+  line-height: var(--text-label--line-height);
+  letter-spacing: var(--text-label--letter-spacing);
+  text-transform: uppercase;
 }
 @utility type-display {
   font-size: var(--text-display);
