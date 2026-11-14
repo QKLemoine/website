@@ -1,6 +1,7 @@
 import { ArrowUpRight, ChevronDown } from "lucide-react";
 import type { ReactNode } from "react";
 
+import { Reveal } from "@/components/motion/reveal"
 import { OffTheClock } from "@/components/off-the-clock/off-the-clock";
 import {
   about,
@@ -52,10 +53,12 @@ function Section({
 }) {
   return (
     <section id={id} className="scroll-mt-14 pt-section">
-      <h2 className="border-t border-foreground/25 pt-6 font-serif type-heading">
-        {label}
-      </h2>
-      <div className="mt-10">{children}</div>
+      <Reveal>
+        <h2 className="border-t border-foreground/25 pt-6 font-serif type-heading">
+          {label}
+        </h2>
+        <div className="mt-10">{children}</div>
+      </Reveal>
     </section>
   );
 }

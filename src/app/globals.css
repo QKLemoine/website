@@ -231,3 +231,51 @@
   outline-offset: 4px;
   animation: agent-highlight 1.8s ease-out;
 }
+
+/*
+ * Motion. Everything here animates opacity or transform only, runs once or
+ * in answer to the visitor, and is switched off under reduced motion.
+ */
+@media (prefers-reduced-motion: no-preference) {
+  html {
+    scroll-behavior: smooth;
+  }
+}
+
+/* Sections fade up a few pixels the first time they scroll into view. */
+[data-reveal="pending"] {
+  opacity: 0;
+  transform: translateY(12px);
+}
+[data-reveal="shown"] {
+  transition:
+    opacity var(--duration-slow) var(--ease-standard),
+    transform var(--duration-slow) var(--ease-standard);
+}
+
+/* A write-up fades in when its disclosure opens, where the browser can. */
+details.reveal::details-content {
+  opacity: 0;
+  transition:
+    opacity var(--duration-base) var(--ease-standard),
+    content-visibility var(--duration-base) allow-discrete;
+}
+details.reveal[open]::details-content {
+  opacity: 1;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+  }
+}
+
+@media print {
+  [data-reveal="pending"] {
+    opacity: 1;
+    transform: none;
+  }
+}
