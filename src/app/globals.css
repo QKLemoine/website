@@ -31,7 +31,8 @@
   --color-signal: var(--signal);
   --color-print: var(--print);
   --color-media: var(--media);
-  --color-band: var(--band);
+  --color-tone-stone: var(--tone-stone);
+  --color-tone-olive: var(--tone-olive);
 }
 
 /*
@@ -126,8 +127,10 @@
   --line: #d3d0c6;
   --text: #111111;
   --text-muted: #5c5b56;
-  /* The band behind "Off the clock", one step off the page. */
-  --band: #e9e7e0;
+  /* Section tones: full-width bands that change the page colour between
+     subjects. Slight but visible; text and accent keep AA on both. */
+  --tone-stone: #e6e4dc;
+  --tone-olive: #dcddcf;
   --brand: var(--accent-light);
   /* Text on a --brand fill. */
   --on-brand: #ffffff;
@@ -170,7 +173,8 @@
   --line: #2a2a2a;
   --text: #f4f4f2;
   --text-muted: #9a9a96;
-  --band: #121212;
+  --tone-stone: #141619;
+  --tone-olive: #171811;
   --brand: var(--accent-dark);
   /* A light accent carries dark text. */
   --on-brand: #0a0a0a;
@@ -179,6 +183,48 @@
   --media: #000000;
 
   --destructive: oklch(0.704 0.191 22.216);
+}
+
+/*
+ * The ink tone: a section (and the footer) set on a near-black band in both
+ * themes, a graphite one in dark. It swaps the whole palette, so everything
+ * inside it, buttons and links included, stays legible.
+ */
+.tone-ink {
+  --page: #0f0f10;
+  --surface: #18191b;
+  --elevated: #1f2023;
+  --line: #2c2d31;
+  --text: #f4f4f2;
+  --text-muted: #a3a39e;
+  --brand: var(--accent-dark);
+  --on-brand: #0a0a0a;
+  --signal: var(--brand);
+
+  --background: var(--page);
+  --foreground: var(--text);
+  --card: var(--surface);
+  --card-foreground: var(--text);
+  --popover: var(--elevated);
+  --popover-foreground: var(--text);
+  --primary: var(--brand);
+  --primary-foreground: var(--on-brand);
+  --secondary: var(--elevated);
+  --secondary-foreground: var(--text);
+  --muted: var(--elevated);
+  --muted-foreground: var(--text-muted);
+  --accent: var(--elevated);
+  --accent-foreground: var(--text);
+  --border: var(--line);
+  --input: var(--line);
+  --ring: var(--brand);
+  color: var(--foreground);
+}
+.dark .tone-ink {
+  --page: #1b1c1f;
+  --surface: #222327;
+  --elevated: #2a2b2f;
+  --line: #36373c;
 }
 
 /*

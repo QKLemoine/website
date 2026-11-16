@@ -1,4 +1,4 @@
-import { ArrowUpRight, ChevronDown } from "lucide-react"
+import { ArrowUpRight } from "lucide-react"
 import type { ReactNode } from "react"
 
 import { Reveal } from "@/components/motion/reveal"
@@ -23,6 +23,7 @@ import {
   projectId,
   socials,
 } from "./shared"
+import { ProjectTile, VideoToggle, type TileData } from "./project-tile"
 
 /** Small technical labels: field names, figure numbers, dates, tags. */
 const LABEL = "type-label text-muted-foreground"
@@ -37,210 +38,192 @@ function Mark({ children }: { children: ReactNode }) {
   )
 }
 
+type Tone = "page" | "stone" | "olive" | "ink"
+
+const TONE_BG: Record<Exclude<Tone, "page">, string> = {
+  stone: "bg-tone-stone",
+  olive: "bg-tone-olive",
+  // Inside .tone-ink the palette is swapped, so this is the ink colour.
+  ink: "bg-background",
+}
+
 /**
- * A page section: a serif heading under a hairline, then its content. Every
- * section starts at the same left edge and is the same distance from the
- * one before it.
+ * A page section: a bold heading, then its content, on one left edge.
+ * Sections on the page colour are separated by a hairline; the others sit
+ * on a full-width band of their own tone, so the page changes colour as it
+ * moves from one subject to the next.
  */
 function Section({
   id,
   label,
-  band = false,
+  tone = "page",
+  flush = false,
+  action,
   children,
 }: {
   id: string
   label: string
-  /** Sit the section on a full-width band one step off the page colour. */
-  band?: boolean
+  tone?: Tone
+  /** Butt up against the previous band instead of leaving a gap. */
+  flush?: boolean
+  /** A control shown at the right end of the heading row. */
+  action?: ReactNode
   children: ReactNode
 }) {
+  const banded = tone !== "page"
   return (
     <section
       id={id}
       className={cn(
-        "scroll-mt-14 pt-section",
-        band && "relative isolate mt-section pb-block"
+        "scroll-mt-14",
+        banded ? "relative isolate py-section" : "pt-section",
+        banded && !flush && "mt-section",
+        tone === "ink" && "tone-ink"
       )}
     >
-      {band && (
+      {banded && (
         <div
           aria-hidden
-          className="absolute inset-y-0 left-1/2 -z-10 w-screen -translate-x-1/2 border-y border-border bg-band"
+          className={cn(
+            "absolute inset-y-0 left-1/2 -z-10 w-screen -translate-x-1/2",
+            TONE_BG[tone]
+          )}
         />
       )}
       <Reveal>
-        <h2 className="border-t border-foreground/25 pt-6 type-heading font-bold">
-          {label}
-        </h2>
+        <div
+          className={cn(
+            "flex flex-wrap items-end justify-between gap-4",
+            !banded && "border-t border-foreground/25 pt-6"
+          )}
+        >
+          <h2 className="type-heading font-bold">{label}</h2>
+          {action}
+        </div>
         <div className="mt-10">{children}</div>
       </Reveal>
     </section>
   )
 }
 
-type EntryLayout =
-  /** One column of the two-column grid. */
-  | "half"
-  /** Full width: the figure runs edge to edge, the text below it. */
-  | "wide"
-  /** Full width, with two figures side by side and the text below them. */
-  | "pair"
+/**
+ * Where each tile sits in the project mosaic, by position in the list.
+ * Phones get one column, tablets two, and wide screens a 12-column grid of
+ * mixed shapes: a large tile beside two short ones, then the mirror image,
+ * then a full-width finish. Further projects fall back to half-width tiles.
+ */
+const TILE_LAYOUT = [
+  "aspect-[4/3] sm:col-span-2 sm:aspect-video lg:col-span-7 lg:col-start-1 lg:row-span-2 lg:row-start-1 lg:aspect-auto",
+  "aspect-[4/3] lg:col-span-5 lg:col-start-8 lg:row-start-1 lg:aspect-auto",
+  "aspect-[4/3] lg:col-span-5 lg:col-start-8 lg:row-start-2 lg:aspect-auto",
+  "aspect-[4/3] lg:col-span-5 lg:col-start-1 lg:row-start-3 lg:aspect-auto",
+  "aspect-[4/3] lg:col-span-5 lg:col-start-1 lg:row-start-4 lg:aspect-auto",
+  "aspect-[4/3] sm:col-span-2 sm:aspect-video lg:col-span-7 lg:col-start-6 lg:row-span-2 lg:row-start-3 lg:aspect-auto",
+  "aspect-[4/3] sm:col-span-2 sm:aspect-[21/9] lg:col-span-12 lg:row-span-2 lg:aspect-auto",
+]
+const TILE_FALLBACK = "aspect-[4/3] lg:col-span-6 lg:row-span-2 lg:aspect-auto"
 
 /**
- * One project. Every project has the same parts in the same order: title,
- * figure with its caption, outcome, summary, then tags, links and the
- * write-up. A hairline above each one marks where it starts; the media is
- * the largest thing in it.
+ * A project's full write-up, shown in its dialog: the figures with their
+ * captions, then the outcome and the full description beside the tags and
+ * links.
  */
-function ProjectEntry({
-  project,
-  layout,
-}: {
-  project: Project
-  layout: EntryLayout
-}) {
-  const title = (
-    <h3 className="type-title font-bold text-balance">{project.title}</h3>
-  )
-  const figures = (
-    <ProjectFigures
-      project={project}
-      sizes={
-        layout === "half"
-          ? "(min-width: 1440px) 680px, (min-width: 640px) 50vw, 100vw"
-          : "(min-width: 1440px) 1360px, 100vw"
-      }
-      captionClassName="mt-3 type-caption text-muted-foreground"
-      label={(text) => (
-        <span className="mr-1 type-label text-foreground">{text}</span>
-      )}
-    />
-  )
-  const text = (
-    <div className="space-y-2">
-      {project.outcome && (
-        <p className="type-body">
-          <Mark>{project.outcome.metric}</Mark> {project.outcome.label}.
-        </p>
-      )}
-      <p className="max-w-measure type-body text-muted-foreground">
-        {project.summary}
-      </p>
-    </div>
-  )
-  const meta = (
-    <div>
-      {/* Tags are plain chips, so they cannot be mistaken for links. */}
-      <ul className="flex flex-wrap gap-1.5">
-        {project.tech.map((tech) => (
-          <li
-            key={tech}
-            className="rounded-sm border border-border px-2 py-1 type-label text-muted-foreground"
-          >
-            {tech}
-          </li>
-        ))}
-      </ul>
-      {project.links && project.links.length > 0 && (
-        <ul className="mt-3 flex flex-wrap gap-x-5 gap-y-1 type-small">
-          {project.links.map((link) => (
-            <li key={link.href}>
-              <a
-                href={link.href}
-                target="_blank"
-                rel="noreferrer"
-                className={LINK}
-              >
-                {link.label}
-                <ArrowUpRight aria-hidden className="size-3.5" />
-              </a>
-            </li>
-          ))}
-        </ul>
-      )}
-      <details className="group/details reveal mt-3">
-        <summary className="inline-flex min-h-6 cursor-pointer list-none items-center gap-1 rounded-sm type-small text-muted-foreground outline-none transition-colors hover:text-foreground focus-visible:ring-3 focus-visible:ring-ring/50 [&::-webkit-details-marker]:hidden">
-          <span className="group-open/details:hidden">Read the write-up</span>
-          <span className="hidden group-open/details:inline">Close</span>
-          <ChevronDown
-            aria-hidden
-            className="size-4 transition-transform group-open/details:rotate-180"
-          />
-        </summary>
-        <p className="mt-2 max-w-measure type-body text-foreground/90">
-          {project.description}
-        </p>
-      </details>
-    </div>
-  )
-  const frame = "scroll-mt-20 border-t border-border pt-6 pb-16"
-
-  if (layout === "half") {
-    return (
-      // Shares the grid's rows with its neighbour, so two titles of
-      // different lengths still leave the figures and text lined up.
-      <article
-        id={projectId(project)}
-        className={cn(frame, "row-span-3 grid grid-rows-subgrid gap-y-5")}
-      >
-        {title}
-        <div>{figures}</div>
-        <div className="space-y-5">
-          {text}
-          {meta}
-        </div>
-      </article>
-    )
-  }
-
+function ProjectDetail({ project }: { project: Project }) {
+  const pair = hasPair(project)
   return (
-    <article
-      id={projectId(project)}
-      className={cn(frame, "space-y-5 sm:col-span-2")}
-    >
-      {title}
-      <div
-        className={cn(
-          "grid gap-x-seam gap-y-5",
-          layout === "pair" && "sm:grid-cols-2"
-        )}
-      >
-        {figures}
+    <div className="space-y-8">
+      <div className={cn("grid gap-x-seam gap-y-5", pair && "sm:grid-cols-2")}>
+        <ProjectFigures
+          project={project}
+          sizes={
+            pair
+              ? "(min-width: 1152px) 550px, (min-width: 640px) 50vw, 100vw"
+              : "(min-width: 1152px) 1100px, 100vw"
+          }
+          captionClassName="mt-3 type-caption text-muted-foreground"
+          label={(text) => (
+            <span className="mr-1 type-label text-foreground">{text}</span>
+          )}
+        />
       </div>
-      <div className="grid gap-x-8 gap-y-5 lg:grid-cols-12">
-        <div className="lg:col-span-6">{text}</div>
-        <div className="lg:col-span-5 lg:col-start-8">{meta}</div>
+      <div className="grid gap-x-8 gap-y-6 lg:grid-cols-12">
+        <div className="space-y-3 lg:col-span-7">
+          {project.outcome && (
+            <p className="type-lead">
+              <Mark>{project.outcome.metric}</Mark> {project.outcome.label}.
+            </p>
+          )}
+          {/* The tile already shows the one-line summary; the dialog
+              gives the full write-up instead of repeating it. */}
+          <p className="max-w-measure type-body text-foreground/90">
+            {project.description}
+          </p>
+        </div>
+        <div className="space-y-4 lg:col-span-4 lg:col-start-9">
+          <ul className="flex flex-wrap gap-1.5">
+            {project.tech.map((tech) => (
+              <li
+                key={tech}
+                className="rounded-sm border border-border px-2 py-1 type-label text-muted-foreground"
+              >
+                {tech}
+              </li>
+            ))}
+          </ul>
+          {project.links && project.links.length > 0 && (
+            <ul className="flex flex-wrap gap-x-5 gap-y-1 type-small">
+              {project.links.map((link) => (
+                <li key={link.href}>
+                  <a
+                    href={link.href}
+                    target="_blank"
+                    rel="noreferrer"
+                    className={LINK}
+                  >
+                    {link.label}
+                    <ArrowUpRight aria-hidden className="size-3.5" />
+                  </a>
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
       </div>
-    </article>
+    </div>
   )
+}
+
+function tileData(project: Project): TileData {
+  return {
+    id: projectId(project),
+    title: project.title,
+    video: project.video,
+    image: project.image,
+    metric: project.outcome?.metric,
+    outcome: project.outcome?.label,
+    summary: project.summary,
+  }
 }
 
 /** Everything under the hero: the page's five sections. */
 export function HomeSections() {
-  const layouts: EntryLayout[] = projects.map((project, index) =>
-    index === 0 ? "wide" : hasPair(project) ? "pair" : "half"
-  )
-  // An odd number of half-width entries would leave a hole in the grid, so
-  // the last of them runs full width instead.
-  if (layouts.filter((layout) => layout === "half").length % 2 === 1) {
-    layouts[layouts.lastIndexOf("half")] = "wide"
-  }
-
   return (
     <>
-      <Section id="projects" label="Selected work">
-        <div className="-mb-16 grid gap-x-6 sm:grid-cols-2">
+      <Section id="projects" label="Selected work" action={<VideoToggle />}>
+        <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 sm:gap-3 lg:auto-rows-[clamp(11rem,16vw,15rem)] lg:grid-cols-12">
           {projects.map((project, index) => (
-            <ProjectEntry
+            <ProjectTile
               key={project.title}
-              project={project}
-              layout={layouts[index]}
-            />
+              data={tileData(project)}
+              className={TILE_LAYOUT[index] ?? TILE_FALLBACK}
+            >
+              <ProjectDetail project={project} />
+            </ProjectTile>
           ))}
         </div>
       </Section>
 
-      <Section id="about" label="About">
+      <Section id="about" label="About" tone="stone">
         <div className="gap-8 space-y-4 type-body lg:columns-2">
           {about.map((paragraph) => (
             <p
@@ -296,11 +279,11 @@ export function HomeSections() {
         </ol>
       </Section>
 
-      <Section id="off-the-clock" label="Off the clock" band>
+      <Section id="off-the-clock" label="Off the clock" tone="olive">
         <OffTheClock headingClassName="type-title font-bold" />
       </Section>
 
-      <Section id="contact" label="Contact">
+      <Section id="contact" label="Contact" tone="ink" flush>
         <p className="max-w-measure type-lead">{profile.availability}</p>
         {/* Email is the one primary action; the profiles are secondary. */}
         <ul className="mt-6 flex flex-wrap gap-3">
