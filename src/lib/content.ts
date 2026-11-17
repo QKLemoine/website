@@ -352,6 +352,18 @@ export type ExperienceEntry = {
 
 export const experience: ExperienceEntry[] = [
   {
+    org: "Georgia Tech Propulsive Landers (GTPL)",
+    role: "Software and GNC Developer",
+    location: "Atlanta, GA",
+    dates: "Sep. 2026 – Present",
+    bullets: [
+      "Develop guidance, navigation and control (GNC) software, the systems that estimate a vehicle's state and steer it, for GTPL's Monarch rocket and Monoprop drone.",
+      "Work on the error-state Kalman filter (ESKF) that estimates the Monoprop vehicle's state.",
+      "Implement gain and calibration lookup tables that map a target thrust in newtons to Main Throttle Valve (MTV) position commands (valve angle or CdA), with one abstraction shared across the Monoprop, Monarch and Dragonfly vehicles so each needs only its own table, ready to be filled from Propulsion's engine characterization.",
+      "Research machine-learning approaches to optimizing control and navigation, such as model predictive control (MPC).",
+    ],
+  },
+  {
     org: "FDNA",
     role: "AI / Clinical Data Intern",
     location: "Atlanta, GA",
