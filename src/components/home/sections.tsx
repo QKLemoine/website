@@ -14,6 +14,7 @@ import {
   spokenLanguages,
   type Project,
 } from "@/lib/content"
+import { MonopropDemo } from "@/components/demos/monoprop/monoprop-demo"
 import { cn } from "@/lib/utils"
 
 import {
@@ -119,7 +120,8 @@ const TILE_LAYOUT = [
   "aspect-[4/3] lg:col-span-5 lg:col-start-1 lg:row-start-3 lg:aspect-auto",
   "aspect-[4/3] lg:col-span-5 lg:col-start-1 lg:row-start-4 lg:aspect-auto",
   "aspect-[4/3] sm:col-span-2 sm:aspect-video lg:col-span-7 lg:col-start-6 lg:row-span-2 lg:row-start-3 lg:aspect-auto",
-  "aspect-[4/3] sm:col-span-2 sm:aspect-[21/9] lg:col-span-12 lg:row-span-2 lg:aspect-auto",
+  "aspect-[4/3] lg:col-span-6 lg:col-start-1 lg:row-span-2 lg:row-start-5 lg:aspect-auto",
+  "aspect-[4/3] lg:col-span-6 lg:col-start-7 lg:row-span-2 lg:row-start-5 lg:aspect-auto",
 ]
 const TILE_FALLBACK = "aspect-[4/3] lg:col-span-6 lg:row-span-2 lg:aspect-auto"
 
@@ -132,20 +134,26 @@ function ProjectDetail({ project }: { project: Project }) {
   const pair = hasPair(project)
   return (
     <div className="space-y-8">
-      <div className={cn("grid gap-x-seam gap-y-5", pair && "sm:grid-cols-2")}>
-        <ProjectFigures
-          project={project}
-          sizes={
-            pair
-              ? "(min-width: 1152px) 550px, (min-width: 640px) 50vw, 100vw"
-              : "(min-width: 1152px) 1100px, 100vw"
-          }
-          captionClassName="mt-3 type-caption text-muted-foreground"
-          label={(text) => (
-            <span className="mr-1 type-label text-foreground">{text}</span>
-          )}
-        />
-      </div>
+      {project.demo === "monoprop" ? (
+        <MonopropDemo />
+      ) : (
+        <div
+          className={cn("grid gap-x-seam gap-y-5", pair && "sm:grid-cols-2")}
+        >
+          <ProjectFigures
+            project={project}
+            sizes={
+              pair
+                ? "(min-width: 1152px) 550px, (min-width: 640px) 50vw, 100vw"
+                : "(min-width: 1152px) 1100px, 100vw"
+            }
+            captionClassName="mt-3 type-caption text-muted-foreground"
+            label={(text) => (
+              <span className="mr-1 type-label text-foreground">{text}</span>
+            )}
+          />
+        </div>
+      )}
       <div className="grid gap-x-8 gap-y-6 lg:grid-cols-12">
         <div className="space-y-3 lg:col-span-7">
           {project.outcome && (
@@ -199,6 +207,7 @@ function tileData(project: Project): TileData {
     title: project.title,
     video: project.video,
     image: project.image,
+    demo: project.demo,
     metric: project.outcome?.metric,
     outcome: project.outcome?.label,
     summary: project.summary,
@@ -247,9 +256,7 @@ export function HomeSections() {
               {index === 0 && (
                 <>
                   <dt className={cn(LABEL, "mt-5")}>Languages</dt>
-                  <dd className="mt-1">
-                    Native: {spokenLanguages.join(", ")}
-                  </dd>
+                  <dd className="mt-1">Native: {spokenLanguages.join(", ")}</dd>
                 </>
               )}
             </div>

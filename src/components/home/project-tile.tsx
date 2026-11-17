@@ -4,6 +4,7 @@ import { ArrowUpRight, Pause, Play, X } from "lucide-react"
 import Image from "next/image"
 import { useEffect, useRef, useState, type ReactNode } from "react"
 
+import { MonopropPreview } from "@/components/demos/monoprop/monoprop-demo"
 import { cn } from "@/lib/utils"
 
 import { setVideosPaused, useVideosPaused } from "./video-motion"
@@ -13,6 +14,8 @@ export type TileData = {
   title: string
   video?: string
   image?: string
+  /** A built-in demo, previewed live on the tile instead of a clip. */
+  demo?: "monoprop"
   /** CSS object-position for the cropped media, when the centre is wrong. */
   position?: string
   metric?: string
@@ -109,6 +112,7 @@ export function ProjectTile({
   children: ReactNode
 }) {
   const dialogRef = useRef<HTMLDialogElement>(null)
+  const paused = useVideosPaused()
   const titleId = `${data.id}-title`
   const fade =
     "transition-opacity duration-(--duration-base) group-hover/tile:opacity-0 group-focus-visible/tile:opacity-0"
@@ -130,7 +134,9 @@ export function ProjectTile({
           aria-hidden
           className="absolute inset-0 transition-transform duration-(--duration-slow) group-hover/tile:scale-[1.03] motion-reduce:group-hover/tile:scale-100"
         >
-          {data.video ? (
+          {data.demo === "monoprop" ? (
+            <MonopropPreview playing={!paused} />
+          ) : data.video ? (
             <TileVideo
               src={data.video}
               poster={data.image}

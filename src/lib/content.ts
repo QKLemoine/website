@@ -169,6 +169,11 @@ export type Project = {
   note?: string
   /** The project the bento layout gives the large tile. First one wins. */
   featured?: boolean
+  /**
+   * An interactive demo built into the site, shown in the project's dialog
+   * in place of its figures, with a live preview on the tile.
+   */
+  demo?: "monoprop"
 }
 
 export const projects: Project[] = [
@@ -292,6 +297,23 @@ export const projects: Project[] = [
       metric: "Top 5%",
       label:
         "international ranking, with back-to-back World Championship appearances",
+    },
+  },
+  {
+    title: "Monoprop State Estimator",
+    demo: "monoprop",
+    figureCaption:
+      "Interactive simulation of the navigator: switch sensors off or send a bad GPS fix and watch the estimate respond.",
+    figureBrief: "Interactive demo of the state estimator.",
+    summary:
+      "The state estimator for Georgia Tech Propulsive Landers' Monoprop vehicle: an error-state Kalman filter in no_std Rust that fuses two IMUs, a magnetometer, LiDAR and GPS to tell the lander where it is, how fast it's moving and which way it's pointing.",
+    description:
+      "For Georgia Tech Propulsive Landers' Monoprop vehicle, a two-person effort built the state estimator that tells the lander where it is, how fast it's moving and which way it's pointing. At its core is an error-state Kalman filter written in no_std Rust, a 15-state model of position, velocity, attitude and sensor biases with no heap allocation, designed to run on a Teensy 4.1 flight computer. It fuses two IMUs, a magnetometer, a downward LiDAR and GPS, with gated measurement updates that refuse readings far outside their expected noise. On top of it sits the vehicle's navigator: it aligns from still sensor readings on the pad, measures the ground height, combines the two IMUs so losing one doesn't jolt the estimate, and applies tilt-corrected LiDAR range and GPS antenna-offset updates. Vehicle parameters live in a TOML file checked at build time. Simulated flights caught and fixed bugs in the ground-height reference and IMU switching before hardware testing, and the navigator now follows the structure flown at the team's first test campaign.",
+    tech: ["Rust (no_std)", "Kalman filtering", "Sensor fusion", "Teensy 4.1", "TOML"],
+    outcome: {
+      metric: "15-state filter",
+      label:
+        "in no_std Rust with no heap allocation, fusing five sensors, designed for a Teensy 4.1 flight computer",
     },
   },
   {

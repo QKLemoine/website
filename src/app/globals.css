@@ -220,6 +220,26 @@
   --ring: var(--brand);
   color: var(--foreground);
 }
+/*
+ * Series colours for the Monoprop state-estimator demo's canvas. The filter
+ * estimate uses --brand; these mark each sensor. Brighter in dark.
+ */
+.monoprop {
+  --mp-gps: #c2410c;
+  --mp-lidar: #0f766e;
+  --mp-drift: #86307a;
+  --mp-danger: #b91c1c;
+  --mp-plume: #d97706;
+}
+.dark .monoprop,
+.monoprop.dark {
+  --mp-gps: #ff7a3d;
+  --mp-lidar: #3cc4b0;
+  --mp-drift: #c98bc2;
+  --mp-danger: #ff6b6b;
+  --mp-plume: #ffa94d;
+}
+
 .dark .tone-ink {
   --page: #1b1c1f;
   --surface: #222327;
