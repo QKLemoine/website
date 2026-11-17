@@ -4,6 +4,7 @@ import { ArrowUpRight, Pause, Play, X } from "lucide-react"
 import Image from "next/image"
 import { useEffect, useRef, useState, type ReactNode } from "react"
 
+import { LocalCoderPreview } from "@/components/demos/local-coder/local-coder-demo"
 import { MonopropPreview } from "@/components/demos/monoprop/monoprop-demo"
 import { cn } from "@/lib/utils"
 
@@ -15,7 +16,7 @@ export type TileData = {
   video?: string
   image?: string
   /** A built-in demo, previewed live on the tile instead of a clip. */
-  demo?: "monoprop"
+  demo?: "monoprop" | "local-coder"
   /** CSS object-position for the cropped media, when the centre is wrong. */
   position?: string
   metric?: string
@@ -136,6 +137,8 @@ export function ProjectTile({
         >
           {data.demo === "monoprop" ? (
             <MonopropPreview playing={!paused} />
+          ) : data.demo === "local-coder" ? (
+            <LocalCoderPreview playing={!paused} />
           ) : data.video ? (
             <TileVideo
               src={data.video}

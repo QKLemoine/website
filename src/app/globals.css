@@ -240,6 +240,19 @@
   --mp-plume: #ffa94d;
 }
 
+/* Pass, fail and in-progress marks for the local-coder demo. */
+.local-coder {
+  --lc-ok: #1a7f4b;
+  --lc-bad: #b42318;
+  --lc-wip: #9a6700;
+}
+.dark .local-coder,
+.local-coder.dark {
+  --lc-ok: #5ccf8f;
+  --lc-bad: #f2877c;
+  --lc-wip: #e3b341;
+}
+
 .dark .tone-ink {
   --page: #1b1c1f;
   --surface: #222327;

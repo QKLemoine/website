@@ -14,6 +14,7 @@ import {
   spokenLanguages,
   type Project,
 } from "@/lib/content"
+import { LocalCoderDemo } from "@/components/demos/local-coder/local-coder-demo"
 import { MonopropDemo } from "@/components/demos/monoprop/monoprop-demo"
 import { cn } from "@/lib/utils"
 
@@ -122,6 +123,7 @@ const TILE_LAYOUT = [
   "aspect-[4/3] sm:col-span-2 sm:aspect-video lg:col-span-7 lg:col-start-6 lg:row-span-2 lg:row-start-3 lg:aspect-auto",
   "aspect-[4/3] lg:col-span-6 lg:col-start-1 lg:row-span-2 lg:row-start-5 lg:aspect-auto",
   "aspect-[4/3] lg:col-span-6 lg:col-start-7 lg:row-span-2 lg:row-start-5 lg:aspect-auto",
+  "aspect-[4/3] sm:col-span-2 sm:aspect-[21/9] lg:col-span-12 lg:row-span-2 lg:aspect-auto",
 ]
 const TILE_FALLBACK = "aspect-[4/3] lg:col-span-6 lg:row-span-2 lg:aspect-auto"
 
@@ -136,6 +138,8 @@ function ProjectDetail({ project }: { project: Project }) {
     <div className="space-y-8">
       {project.demo === "monoprop" ? (
         <MonopropDemo />
+      ) : project.demo === "local-coder" ? (
+        <LocalCoderDemo />
       ) : (
         <div
           className={cn("grid gap-x-seam gap-y-5", pair && "sm:grid-cols-2")}

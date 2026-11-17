@@ -173,7 +173,7 @@ export type Project = {
    * An interactive demo built into the site, shown in the project's dialog
    * in place of its figures, with a live preview on the tile.
    */
-  demo?: "monoprop"
+  demo?: "monoprop" | "local-coder"
 }
 
 export const projects: Project[] = [
@@ -339,6 +339,29 @@ export const projects: Project[] = [
       metric: "1 calendar",
       label: "across every class a student is enrolled in",
     },
+  },
+  {
+    title: "Verifier-Gated Local Coder",
+    demo: "local-coder",
+    figureCaption:
+      "The pipeline replaying its first logged runs: tasks planned, generated locally, checked by verifiers, reviewed and kept as training pairs.",
+    figureBrief: "Interactive replay of the verifier-gated pipeline.",
+    summary:
+      "An independent, actively running project: a self-improving coding assistant where a 4-bit Qwen3.5-9B on my 8 GB GPU writes code for my game project, gated by static verifiers and a frontier-model reviewer, and generates its own verified fine-tuning data.",
+    description:
+      "A self-improving coding assistant I'm building on my own: a 4-bit Qwen3.5-9B runs on my 8 GB GPU as a junior developer on my game project, while a frontier model plans tasks and reviews the results, and a linter and strict type checker gate every output through a retry loop. The pipeline is running right now, generating verified training examples that I'll use to QLoRA fine-tune the model; next, I'm adding retrieval over API docs and project code and comparing base, fine-tuned and retrieval-augmented models on held-out tasks.",
+    tech: ["Python", "Qwen3.5-9B", "llama.cpp / Ollama", "QLoRA (Unsloth)", "Claude", "RAG"],
+    outcome: {
+      metric: "9B model on an 8 GB GPU",
+      label:
+        "writing verified code for a real project and producing its own fine-tuning data",
+    },
+    links: [
+      {
+        label: "Full write-up",
+        href: "https://claude.ai/artifact/Y1MwBisWxYSGPs6Bgb98br",
+      },
+    ],
   },
 ]
 
